@@ -1,0 +1,58 @@
+<mvc:View xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:footerbar="sap.ushell.ui.footerbar" controllerName="req.vendor.codan.controller.SearchVendor">
+  <Page id="page" navButtonPress="onNavBack" showNavButton="true" title="{i18n>searchVendorTitle}" backgroundDesign="Solid">
+    <content>
+    <HBox height="2rem"/>
+    <MessageStrip text="{i18n>searchVendorExplainText}" showIcon="true"/>
+    <HBox height="2rem"/>
+    <!--<Text id="searchVendorExplainText" text="{i18n>searchVendorExplainText}"/>-->
+      <sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" columnsL="1" editable="false" emptySpanL="4" emptySpanM="4" id="SearchQueryParams" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" minWidth="1024" backgroundDesign="Transparent">
+          <sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form" editable="true">
+	          <Label text="Vendor Search" width="100%" id="vendorNameLabel" textAlign="Right" labelFor="vendorName" class="vendorSearchLabel"/>
+	          <Input id="vendorName" value="{worklistView>/vendorName}" placeholder="Search by Vendor ID, Name or ABN" liveChange="vendorNameChange"/>
+          </sap.ui.layout.form:content>
+      </sap.ui.layout.form:SimpleForm>
+      <sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" editable="false" layout="ResponsiveGridLayout" backgroundDesign="Transparent" labelSpanL="3" labelSpanM="3">
+          <sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form">
+          <Label text="" width="100%"/>
+          <Button id="btnSearch" text="Search" width="120px" type="Emphasized" press="onSearch"/>
+        </sap.ui.layout.form:content>
+      </sap.ui.layout.form:SimpleForm>
+      <Table id="searchResultsTable" width="auto" class="sapUiResponsiveMargin"
+    		 items="{ path: '/Vendors', sorter: { path: 'name', descending: false } }" 
+    		 noDataText="{i18n>tableNoDataText}" busyIndicatorDelay="{worklistView>/tableBusyDelay}" 
+    		 growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
+        <headerToolbar>
+          <Toolbar>
+            <Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
+          </Toolbar>
+        </headerToolbar>
+        <columns>
+          <Column id="vendorNameTableColumn">
+            <Text text="{i18n>vendorNameColumnTitle}" id="vendorNameColumnTitle"/>
+          </Column>
+          <Column id="abnTableColumn">
+            <Text text="{i18n>abnColumnTitle}" id="abnColumnTitle"/>
+          </Column>
+          <Column id="addressTableColumn">
+            <Text text="{i18n>addressColumnTitle}" id="addressColumnTitle"/>
+          </Column>
+        </columns>
+        <items>
+          <ColumnListItem type="Navigation" press="onSelectVendor">
+            <cells>
+              <ObjectIdentifier title="{name} ({id})" id="vendorResultsName"/>
+              <Text text="{abn}" maxLines="0" id="vendorResultsAbn"/>
+              <Text text="{addressStr}" maxLines="0" id="vendorResultsAddress"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+    <footer>
+      <OverflowToolbar id="footerToolbar">
+        <ToolbarSpacer/>
+        <Button type="Emphasized" enabled="{worklistView>/searched}" text="{i18n>btnCreateVendor}" press="createNewVendor"/>
+      </OverflowToolbar>
+    </footer>
+  </Page>
+</mvc:View>
