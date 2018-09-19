@@ -1,15 +1,71 @@
 sap.ui.define([
-	"sap/ui/core/mvc/Controller"
-], function(Controller) {
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/model/json/JSONModel"
+], function (Controller, JSONModel) {
 	"use strict";
 
 	return Controller.extend("req.vendor.codan.controller.BaseController", {
+
+		onInit: function () {
+
+			// Initialise the countries data from the json file
+			var oCountriesModel = new JSONModel({
+				bCache: true
+			});
+			oCountriesModel.loadData("model/countries.json");
+			oCountriesModel.setSizeLimit(9999);
+			this.setModel(oCountriesModel, "countries");
+
+			// Initialise the regions data from the json file
+			var oRegionsModel = new JSONModel({
+				bCache: true
+			});
+			oRegionsModel.loadData(this.sBaseUrl + "model/regions.json");
+			oRegionsModel.setSizeLimit(9999);
+			this.setModel(oRegionsModel, "regions");
+
+		},
+
+		/**
+		 * Ensures the region filter on the specified control is set based on the selected Country key
+		 * @param {Object} oControl control to change the binding on
+		 * @param {string} sCountryKey Key of the country selected
+		 * @public
+		 */
+		setRegionFilter: function (oControl, sCountryKey) {
+
+			if (!oControl) {
+				return;
+			}
+
+			var oBinding = oControl.getBinding("items");
+
+			if (!oBinding) {
+				return;
+			}
+
+			var aFilters = [];
+			// Always start with a blank value
+			aFilters.push(new sap.ui.model.Filter("country", sap.ui.model.FilterOperator.EQ, ""));
+
+			// If a country key is passed, add that as well
+			if (sCountryKey && sCountryKey !== "") {
+				aFilters.push(new sap.ui.model.Filter("country", sap.ui.model.FilterOperator.EQ, sCountryKey));
+			}
+
+			oBinding.filter(new sap.ui.model.Filter({
+				filters: aFilters,
+				and: false
+			}));
+
+		},
+
 		/**
 		 * Convenience method for accessing the router.
 		 * @public
 		 * @returns {sap.ui.core.routing.Router} the router for this component
 		 */
-		getRouter: function() {
+		getRouter: function () {
 			return sap.ui.core.UIComponent.getRouterFor(this);
 		},
 
@@ -19,7 +75,7 @@ sap.ui.define([
 		 * @param {string} [sName] the model name
 		 * @returns {sap.ui.model.Model} the model instance
 		 */
-		getModel: function(sName) {
+		getModel: function (sName) {
 			return this.getView().getModel(sName);
 		},
 
@@ -30,7 +86,7 @@ sap.ui.define([
 		 * @param {string} sName the model name
 		 * @returns {sap.ui.mvc.View} the view instance
 		 */
-		setModel: function(oModel, sName) {
+		setModel: function (oModel, sName) {
 			return this.getView().setModel(oModel, sName);
 		},
 
@@ -39,7 +95,7 @@ sap.ui.define([
 		 * @public
 		 * @returns {sap.ui.model.resource.ResourceModel} the resourceModel of the component
 		 */
-		getResourceBundle: function() {
+		getResourceBundle: function () {
 			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
 		},
 
@@ -48,7 +104,7 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent the butten press event
 		 * @public
 		 */
-		onSharePress: function() {
+		onSharePress: function () {
 			var oShareSheet = this.byId("shareSheet");
 			jQuery.sap.syncStyleClass(this.getOwnerComponent().getContentDensityClass(), this.getView(), oShareSheet);
 			oShareSheet.openBy(this.byId("shareButton"));
@@ -58,7 +114,7 @@ sap.ui.define([
 		 * Event handler when the share by E-Mail button has been clicked
 		 * @public
 		 */
-		onShareEmailPress: function() {
+		onShareEmailPress: function () {
 			var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
 			sap.m.URLHelper.triggerEmail(
 				null,

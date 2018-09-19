@@ -72,7 +72,7 @@ sap.ui.define([
 		 */
 		onSelectVendor: function(event) {
 			this.getRouter().navTo("vendorFactSheet", {
-				id: event.getParameter("selectedItem").getBindingContext().getProperty("id")
+				id: event.getSource().getBindingContext().getProperty("id")
 			});
 		},
 		
