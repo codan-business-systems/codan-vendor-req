@@ -20,7 +20,7 @@ sap.ui.define([
 			var oRegionsModel = new JSONModel({
 				bCache: true
 			});
-			oRegionsModel.loadData(this.sBaseUrl + "model/regions.json");
+			oRegionsModel.loadData("model/regions.json");
 			oRegionsModel.setSizeLimit(9999);
 			this.setModel(oRegionsModel, "regions");
 
