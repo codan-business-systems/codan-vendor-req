@@ -5,11 +5,12 @@
 		<semantic:content>
 			<Toolbar>
 				<ToolbarSpacer/>
-				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }"
+				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }" visible="{detailView>/existingVendor}"
 					text="{= ${detailView>/editMode} ? ${i18n>btnCancel} : ${i18n>btnRequestUpdate} }" press="toggleEditMode"/>
 			</Toolbar>
 			<ObjectHeader title="{name1} ({vendorId})" condensed="true" id="factSheetObjectHeader" backgroundDesign="Transparent"
 				visible="{detailView>/existingVendor}"/>
+			<MessageStrip text="{i18n>newVendorExplainText}" visible="{= !${detailView>/existingVendor} }" type="Information" showIcon="true"/>
 			<HBox width="100%">
 				<VBox width="50%" height="100%">
 					<Panel id="basicDetailPanel">
@@ -42,8 +43,9 @@
 						<Table id="orgAssignmentTable" items="{detailView>/orgAssignments}" class="sapUiSizeCompact sapUiResponsiveMargin"
 							busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
 							<infoToolbar>
-								<Toolbar>
-									<Text text="{i18n>txtOrgAssignmentExplain}"/>
+								<Toolbar >
+									<Text text="{i18n>txtOrgAssignmentExplain}" visible="{detailView>/existingVendor}"/>
+									<Text text="" visible="{= !${detailView>/existingVendor} }        "
 								</Toolbar>
 							</infoToolbar>
 							<columns>

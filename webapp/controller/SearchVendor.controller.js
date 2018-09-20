@@ -45,6 +45,10 @@ sap.ui.define([
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
 		},
+		
+		createNewVendor: function() {
+			this.getRouter().navTo("newVendor");
+		},
 
 		/**
 		 * Execute the search

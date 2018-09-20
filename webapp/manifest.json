@@ -116,6 +116,13 @@
 					"target": [
 						"vendorFactSheet"
 					]
+				},
+				{
+					"name": "newVendor",
+					"pattern": "new",
+					"target": [
+						"newVendor"
+					]
 				}
 			],
 			"targets": {
@@ -128,6 +135,14 @@
 					"viewLevel": 1
 				},
 				"vendorFactSheet": {
+					"viewType": "XML",
+					"transition": "slide",
+					"clearControlAggregation": false,
+					"viewName": "VendorFactSheet",
+					"viewId": "VendorFactSheet",
+					"viewLevel": 1
+				},
+				"newVendor": {
 					"viewType": "XML",
 					"transition": "slide",
 					"clearControlAggregation": false,

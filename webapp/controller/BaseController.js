@@ -1,7 +1,8 @@
 sap.ui.define([
 	"sap/ui/core/mvc/Controller",
-	"sap/ui/model/json/JSONModel"
-], function (Controller, JSONModel) {
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/core/routing/History"
+], function (Controller, JSONModel, History) {
 	"use strict";
 
 	return Controller.extend("req.vendor.codan.controller.BaseController", {
@@ -121,7 +122,23 @@ sap.ui.define([
 				oViewModel.getProperty("/shareSendEmailSubject"),
 				oViewModel.getProperty("/shareSendEmailMessage")
 			);
-		}
+		},
+		
+		/**
+		 * Navigate back to the Search screen
+		 * @private
+		 */
+		_navBack: function() {
+
+			var sPreviousHash = History.getInstance().getPreviousHash();
+
+			if (sPreviousHash !== undefined) {
+				history.go(-1);
+			} else {
+				this.getRouter().navTo("search", {}, true);
+			}
+
+		},
 
 	});
 
