@@ -1,7 +1,5 @@
 <mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.m.semantic" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core"
-	xmlns:suite="sap.suite.ui.commons" xmlns:l="sap.ui.layout"
-	controllerName="req.vendor.codan.controller.VendorFactSheet">
-	
+	xmlns:suite="sap.suite.ui.commons" xmlns:l="sap.ui.layout" controllerName="req.vendor.codan.controller.VendorFactSheet">
 	<semantic:FullscreenPage id="vendorFactSheetPage" navButtonPress="onNavBack" showNavButton="true" title="{i18n>factSheetViewTitle}"
 		busy="{detailView>/busy}" busyIndicatorDelay="{detailView>/delay}">
 		<semantic:content>
@@ -24,7 +22,7 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1"/>
+								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1" required="{detailView>/editMode}"/>
 								<Input id="name1" value="{name1}" editable="{detailView>/editMode}"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
@@ -82,24 +80,24 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country"/>
+								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country" required="{detailView>/editMode}"/>
 								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }">
 									<core:Item text="{countries>name}" key="{countries>key}"/>
 								</ComboBox>
-								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street"/>
+								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street" required="{detailView>/editMode}"/>
 								<Input id="houseNum1" maxLength="10" width="6rem" value="{houseNo}" editable="{detailView>/editMode}">
-                                    <layoutData>
-                                        <l:GridData id="houseNumGridData" span="L2 M2 S2" />
-                                    </layoutData>
+									<layoutData>
+										<l:GridData id="houseNumGridData" span="L2 M2 S2"/>
+									</layoutData>
 								</Input>
 								<Input id="street" maxLength="30" value="{street}" editable="{detailView>/editMode}"/>
-								<Label id="cityLabel" text="{i18n>lblCity}" labelFor="city"/>
+								<Label id="cityLabel" text="{i18n>lblCity}" labelFor="city" required="{detailView>/editMode}"/>
 								<Input id="city" value="{city}" editable="{detailView>/editMode}"/>
 								<Label id="regionLabel" text="{i18n>lblRegion}" labelFor="region"/>
 								<Select id="region" enabled="{detailView>/editMode}" selectedKey="{region}" items="{path: 'regions>/', sorter: { path: 'name' }}">
 									<core:Item text="{regions>name}" key="{regions>key}"/>
 								</Select>
-								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode"/>
+								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode" required="{detailView>/editMode}"/>
 								<Input id="postcode" value="{postcode}" editable="{detailView>/editMode}"/>
 							</f:content>
 						</f:SimpleForm>
@@ -133,52 +131,93 @@
 					</Panel>
 				</VBox>
 			</HBox>
-			<!--<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyCustomerFormMain" layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" class="zSimpleFormMarginCentre" maxContainerCols="4" labelSpanL="4" labelSpanS="4">
-				<f:content/>
-				<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyCustomerForm1" layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="4" columnsM="2" columnsXL="2" emptySpanXL="0" labelSpanL="4" labelSpanS="4" labelSpanXL="4">
-					<f:toolbar>
-						<Toolbar>
-							<Title text="{i18n>factSheetContactTitle}"/>
-						</Toolbar>
-					</f:toolbar>
-					<f:content>
-						<Label id="labelTitle" text="{i18n>labelCreateTitle}" labelFor="title"/><Input id="title" value="{title}" editable="{factSheetView>/editMode}"/>
-						<Label id="labelAccount" text="{i18n>labelCreateAccountName}"/>
-						<Input id="accountName" value="{name}" maxLength="40" editable="false" valueState="{errorState>/name/state}" valueStateText="{errorState>/name/text}" change="onFieldChange"/>
-						<Label id="labelTelephone" text="{i18n>labelSearchTelephone}"/>
-						<Input id="telephone" value="{telephone}" maxLength="16" editable="{factSheetView>/editMode}"/>
-						<Label id="labelMobile" text="{i18n>labelCreateMobile}"/>
-						<Input id="mobile" value="{mobile}" maxLength="16" editable="{factSheetView>/editMode}"/>
-						<Label id="labelEmail" text="{i18n>labelSearchEmail}"/>
-						<Input id="email" value="{email}" maxLength="255" editable="{factSheetView>/editMode}" valueState="{errorState>/email/state}" valueStateText="{errorState>/email/text}" change="onEmailChange"/>
-					</f:content>
-				</f:SimpleForm>
-				<f:SimpleForm columnsL="1" columnsM="1" editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyCustomerForm2" labelSpanL="4" labelSpanM="4" layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="4" labelSpanS="4" labelSpanXL="4">
-					<f:toolbar>
-						<Toolbar>
-							<Title text="{i18n>factSheetAddressTitle}"/>
-							<ToolbarSpacer/>
-							<Button press="onSave" text="{i18n>btnSave}" enabled="{factSheetView>/editMode}" icon="sap-icon://save"/>
-							<Button press="onToggleEditMode" text="{= ${factSheetView>/editMode} ? 'Cancel' : 'Edit' }" icon="{= ${factSheetView>/editMode} ? 'sap-icon://decline' : 'sap-icon://edit' }" enabled="{isEditable}"/>
-						</Toolbar>
-					</f:toolbar>
-					<f:content>
-						<Label id="labelStreet" text="{i18n>labelSearchStreet}"/>
-						<Input id="street" value="{street}" maxLength="60" editable="{factSheetView>/editMode}" valueState="{errorState>/street/state}" valueStateText="{errorState>/street/text}" change="onFieldChange"/>
-						<Label id="labelCity" text="{i18n>labelSearchCity}"/>
-						<Input id="city" value="{city}" maxLength="25" editable="{factSheetView>/editMode}" valueState="{errorState>/city/state}" valueStateText="{errorState>/city/text}" change="onFieldChange"/>
-						<Label id="labelPostcode" text="{i18n>labelCreatePostcode}"/>
-						<Input id="postcode" value="{postcode}" maxLength="10" editable="{factSheetView>/editMode}" valueState="{errorState>/postcode/state}" valueStateText="{errorState>/postcode/text}" change="onPostcodeChange"/>
-						<Label id="labelRegion" text="{i18n>labelCreateRegion}"/>
-						<Input id="region" value="{regionText}" editable="false" visible="{= ${factSheetView>/editMode} ? false : true }"/>
-						<Select id="selRegion" selectedKey="{region}" items="{path: 'regions>/'}" visible="{factSheetView>/editMode}" width="100%">
-							<core:Item text="{regions>name}" key="{regions>key}"/>
-						</Select>
-						<Label id="labelCountry" text="{i18n>labelSearchCountry}"/>
-						<Input id="country" value="{countryText}" editable="false"/>
-					</f:content>
-				</f:SimpleForm>
-			</f:SimpleForm>-->
+			<HBox width="100%">
+				<VBox width="50%" height="100%">
+					<Panel id="contactDetailsPanel">
+						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout"
+							backgroundDesign="Solid" width="auto" maxContainerCols="8" columnsM="8" columnsXL="8" emptySpanXL="0" labelSpanL="3" labelSpanS="3"
+							labelSpanXL="3" height="100%">
+							<f:toolbar>
+								<Toolbar>
+									<Title text="Contact Details"/>
+								</Toolbar>
+							</f:toolbar>
+							<f:content>
+								<Label id="purchTelLabel" text="{i18n>lblPurchTel}" labelFor="purchTel" required="{detailView>/editMode}"/>
+								<Input id="purchTel" value="{purchTel}" editable="{detailView>/editMode}"/>
+								<Label id="purchFaxLabel" text="{i18n>lblPurchFax}" labelFor="purchFax"/>
+								<Input id="purchFax" value="{purchFax}" editable="{detailView>/editMode}"/>
+								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail" required="{detailView>/editMode}"/>
+								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
+								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
+								<Label id="accountsFaxLabel" text="{i18n>lblAccountsFax}" labelFor="accountsFax"/>
+								<Input id="accountsFax" value="{accountsFax}" editable="{detailView>/editMode}"/>
+								<Label id="accountsEmailLabel" text="{i18n>lblAccountsEmail}" labelFor="accountsEmail" required="{detailView>/editMode}"/>
+								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+							</f:content>
+						</f:SimpleForm>
+					</Panel>
+				</VBox>
+				<VBox width="50%" height="100%">
+					<Panel id="bankDetailsPanel">
+						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyVendorBankDetails"
+							layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="8" columnsM="8" columnsXL="8" emptySpanXL="0"
+							labelSpanL="3" labelSpanS="3" labelSpanXL="3" height="100%">
+							<f:toolbar>
+								<Toolbar>
+									<Title text="Bank Details"/>
+									<ToolbarSpacer/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showBankDetailsHelp"/>
+								</Toolbar>
+							</f:toolbar>
+							<f:content>
+								<Label id="editBankDetailsLabel" text="{i18n>lblChangeBankDetails}" labelFor="editBankDetailsSwitch">
+									<layoutData>
+										<l:GridData id="bankSwitchGridData" span="L4 M4 S4"/>
+									</layoutData>
+								</Label>
+								<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}" enabled="{detailView>/editMode}"/> 
+								<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName" 
+										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<Input id="accountName" value="{accountName}" editable="{detailView>/editMode}"/>
+								<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry" 
+										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }" />
+								<ComboBox id="bankCountry" enabled="{detailView>/editMode}" selectedKey="{accountCountry}"
+									items="{path: 'countries>/', sorter: { path: 'name' } }">
+									<core:Item text="{countries>name}" key="{countries>key}"/>
+								</ComboBox>
+								<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey" 
+										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<Input id="bankKey" value="{accountBankKey}" editable="{detailView>/editMode}"/>
+								<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber" 
+										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<Input id="accountNumber" value="{accountNumber}" editable="{detailView>/editMode}"/>
+								<Label id="currencyLabel" text="{i18n>lblCurrency}" labelFor="currency"
+										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<ComboBox id="currency" enabled="{detailView>/editMode}" selectedKey="{currency}"
+									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">
+									<core:Item text="{key} ({value})" key="{key}"/>
+								</ComboBox>
+							</f:content>
+						</f:SimpleForm>
+					</Panel>
+				</VBox>
+			</HBox>
+			<UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
+				maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"
+				noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}">
+				<items>
+					<UploadCollectionItem contributor="{createdByName}" documentId="{attachmentId}" fileName="{fileName}" fileSize="{fileSize}"
+						mimeType="{mimeType}" visibleEdit="false" url="/sap/opu/odata/sap/z_vendor_req_srv/Attachments('{attachmentId}')/$value"/>
+				</items>
+			</UploadCollection>
 		</semantic:content>
+		<semantic:saveAction>
+			<semantic:SaveAction press="saveReq"/>
+		</semantic:saveAction>
+		<semantic:customFooterContent>
+			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized"/>
+		</semantic:customFooterContent>
 	</semantic:FullscreenPage>
 </mvc:View>

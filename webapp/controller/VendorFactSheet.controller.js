@@ -23,7 +23,11 @@ sap.ui.define([
 				busy: false,
 				editMode: false,
 				existingVendor: false,
-				orgAssignments: []
+				orgAssignments: [],
+				helpPopoverTitle: "",
+				helpPopoverText: "",
+				submitAction: "Submit for Approval",
+				editBankDetails: true
 			});
 
 			this.setModel(oViewModel, "detailView");
@@ -41,6 +45,7 @@ sap.ui.define([
 			this._sVendorId = oEvent.getParameter("arguments").id;
 			
 			this.getModel("detailView").setProperty("/existingVendor", !!this._sVendorId);
+			this.getModel("detailView").setProperty("/editBankDetails", !this._sVendorId);
 			
 			// Create a new request but only populate it with the Vendor Details.
 			// The create should populate the vendor details
@@ -69,6 +74,26 @@ sap.ui.define([
 			// Reset the edit mode
 			this.getModel("detailView").setProperty("/editMode", false);
 
+		},
+		
+		showBankDetailsHelp: function(event) {
+			if (!this._oHelpPopover) {
+				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
+				this.getView().addDependent(this.oHelpPopover);
+			}
+			
+			var oModel = this.getModel("detailView"),
+			title = this.getResourceBundle().getText("bankDetailsHelpTitle");
+			
+			oModel.setProperty("/helpPopoverTitle", title);
+			oModel.setProperty("/helpPopoverText", "Some Text");
+			
+			this._oHelpPopover.setTitle(title);
+			
+			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("bankDetailsHelpText"));
+			
+			this._oHelpPopover.openBy(event.getSource());
+			
 		},
 		
 		/**
@@ -102,6 +127,38 @@ sap.ui.define([
 
 		},
 		
+		onSubmit: function() {
+			
+// TODO: Validate Req
+			
+			
+			// If bank details are entered, raise the verify dialog
+			if (this.getModel("detailView").getProperty("/editBankDetails")) {
+				this._showVerifyBankDialog();
+			}
+		},
+		
+		toggleEditMode: function() {
+			var model = this.getModel("detailView"),
+				editMode = model.getProperty("/editMode");
+				
+// TODO: Check for changes and raise a confirmation
+			
+			model.setProperty("/editMode", !editMode);
+			
+			
+		},
+		
+		cancelBankDetailsDialog: function() {
+			if (this._oBankDialog) {
+				if (this._oBankDialog.close) {
+					this._oBankDialog.close();
+				}
+				this._oBankDialog.destroy();
+				delete this.this._oBankDialog;
+			}
+		},
+		
 		_onBindingChange: function() {
 			var oView = this.getView(),
 				oViewModel = this.getModel("detailView"),
@@ -123,19 +180,19 @@ sap.ui.define([
 
 		},
 		
-		toggleEditMode: function() {
-			var model = this.getModel("detailView"),
-				editMode = model.getProperty("/editMode");
-				
-// TODO: Check for changes and raise a confirmation
-			
-			model.setProperty("/editMode", !editMode);
-			
-			
-		},
-		
 		_setBusy: function(busy) {
 			this.getModel("detailView").setProperty("/busy", busy);
+		},
+		
+		_showVerifyBankDialog: function() {
+			
+			if (!this._oBankDialog) {
+				this._oBankDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.VerifyBankDetails", this);
+				this.getView().addDependent(this._oBankDialog);
+			}
+			
+			this._oBankDialog.open();
+			
 		}
 
 	

@@ -1,0 +1,36 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="{i18n>verifyBankDetailsTitle}" contentWidth="40rem" id="verifyBankDetailDialog">
+		<content>
+			<Text text="{i18n>verifyBankDetailsExplain}" id="verifyBankDetailsExplain" width="100%" textAlign="Center"/>
+			<f:SimpleForm editable="true" id="addItemForm" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
+				<f:content>
+					<Label id="verifyAccountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"/>
+					<Input id="verifyAccountName" value="{accountName}" editable="{detailView>/editMode}"/>
+					<Label id="verifyBankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry"/>
+					<ComboBox id="verifyBankCountry" enabled="{detailView>/editMode}" selectedKey="{accountCountry}"
+						items="{path: 'countries>/', sorter: { path: 'name' } }">
+						<core:Item text="{countries>name}" key="{countries>key}"/>
+					</ComboBox>
+					<Label id="verifyBankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"/>
+					<Input id="verifyBankKey" value="{accountBankKey}" editable="{detailView>/editMode}"/>
+					<Label id="verifyAccountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"/>
+					<Input id="verifyAccountNumber" value="{accountNumber}" editable="{detailView>/editMode}"/>
+					<Label id="verifyCurrencyLabel" text="{i18n>lblCurrency}" labelFor="currency"/>
+					<ComboBox id="verifyCurrency" enabled="{detailView>/editMode}" selectedKey="{currency}"
+						items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">
+						<core:Item text="{key} ({value})" key="{key}"/>
+					</ComboBox>
+					<Label/>
+					<Label id="bankVerifiedWithLabel" text="{i18n>lblBankVerifiedWith}" labelFor="bankVerifiedWith" required="true"/>
+					<Input id="bankVerifiedWith" value="{bankVerifiedWith}" placeholder="Enter the vendor contact name"/>
+					<Label id="bankVerifiedTelLabel" text="{i18n>bankVerifiedTelLabel}" labelFor="bankVerifiedTel" required="true"/>
+					<Input id="bankVerifiedTel" value="{bankVerifiedTel}"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<buttons>
+			<Button text="{i18n>btnCancel}" type="Reject" press="cancelBankDetailsDialog"/>
+			<Button text="{i18n>btnSubmitForApproval}" type="Emphasized" press="bankDetailsVerified"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
