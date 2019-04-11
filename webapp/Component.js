@@ -8,7 +8,8 @@ sap.ui.define([
 	return UIComponent.extend("req.vendor.codan.Component", {
 
 		metadata: {
-			manifest: "json"
+			manifest: "json",
+			includes: ["css/style.css"]
 		},
 
 		/**

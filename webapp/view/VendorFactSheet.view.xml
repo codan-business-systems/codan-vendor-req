@@ -14,9 +14,9 @@
 			<HBox width="100%">
 				<VBox width="50%" height="100%">
 					<Panel id="basicDetailPanel">
-						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyVendorBasicDetail"
-							layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="4" columnsM="4" columnsXL="4" emptySpanXL="0"
-							labelSpanL="2" labelSpanS="2" labelSpanXL="2" height="100%">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorBasicDetail" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
 									<Title text="Basic Detail"/>
@@ -31,39 +31,33 @@
 								<Input id="abn" value="{abn}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}"/>
-								<!-- For Padding -->
-								<Label id="dummyLabel" labelFor="dummy"/>
-								<Input id="dummy" editable="false"/>
 							</f:content>
 						</f:SimpleForm>
 					</Panel>
 				</VBox>
 				<VBox width="50%" height="100%">
 					<Panel id="orgAssignmentPanel" class="orgAssignmentPanel">
-						<Table id="orgAssignmentTable" items="{detailView>/orgAssignments}" class="sapUiSizeCompact sapUiResponsiveMargin"
+						<Table id="orgAssignmentTable" items="{detailView>/orgAssignments}" class="sapUiSizeCompact"
 							busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
-							<infoToolbar>
-								<Toolbar >
+							<!--<infoToolbar>
+								<Toolbar>
 									<Text text="{i18n>txtOrgAssignmentExplain}" visible="{detailView>/existingVendor}"/>
-									<Text text="" visible="{= !${detailView>/existingVendor} }        "
+									<Text text="" visible="{= !${detailView>/existingVendor} }"/>
 								</Toolbar>
-							</infoToolbar>
+							</infoToolbar>-->
+							<headerToolbar>
+								<Toolbar>
+									<Title text="{i18n>txtCompanyCodes}"/>
+								</Toolbar>
+							</headerToolbar>
 							<columns>
-								<Column id="colCompanyCode">
-									<Text text="{i18n>txtColCompanyCode}"/>
-								</Column>
-								<Column id="colStockProcurement">
-									<Text text="{i18n>txtColStockProcurement}"/>
-								</Column>
-								<Column id="colServiceProcurement">
-									<Text text="{i18n>txtColServiceProcurement}"/>
-								</Column>
+								<Column id="colCompanyCode"/>
+								<Column id="colStockProcurement"/>
 							</columns>
 							<items>
 								<ColumnListItem type="Inactive">
 									<ObjectIdentifier text="{detailView>companyCodeText} ({detailView>companyCode})"/>
 									<Switch state="{detailView>companyActive}" enabled="{detailView>/editMode}"/>
-									<Switch state="{detailView>purchOrgActive}" visible="{= !!${detailView>purchOrg} }" enabled="{detailView>/editMode}"/>
 								</ColumnListItem>
 							</items>
 						</Table>
@@ -73,9 +67,9 @@
 			<HBox width="100%">
 				<VBox width="50%" height="100%">
 					<Panel id="streetAddressPanel">
-						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyVendorStreetAddress"
-							layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="8" columnsM="8" columnsXL="8" emptySpanXL="0"
-							labelSpanL="2" labelSpanS="2" labelSpanXL="2" height="100%">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorStreetAddress" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
 									<Title text="Street Address"/>
@@ -107,9 +101,9 @@
 				</VBox>
 				<VBox width="50%" height="100%">
 					<Panel id="postalAddressPanel">
-						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyVendorPostalAddress"
-							layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="4" columnsM="4" columnsXL="4" emptySpanXL="0"
-							labelSpanL="2" labelSpanS="2" labelSpanXL="2" height="100%">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorPostalAddress" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
 									<Title text="Postal Address"/>
@@ -136,9 +130,9 @@
 			<HBox width="100%">
 				<VBox width="50%" height="100%">
 					<Panel id="contactDetailsPanel">
-						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout"
-							backgroundDesign="Solid" width="auto" maxContainerCols="8" columnsM="8" columnsXL="8" emptySpanXL="0" labelSpanL="3" labelSpanS="3"
-							labelSpanXL="3" height="100%">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
 									<Title text="Contact Details"/>
@@ -163,9 +157,9 @@
 				</VBox>
 				<VBox width="50%" height="100%">
 					<Panel id="bankDetailsPanel">
-						<f:SimpleForm editable="true" emptySpanL="0" emptySpanM="0" adjustLabelSpan="false" id="modifyVendorBankDetails"
-							layout="ResponsiveGridLayout" backgroundDesign="Solid" width="auto" maxContainerCols="8" columnsM="8" columnsXL="8" emptySpanXL="0"
-							labelSpanL="3" labelSpanS="3" labelSpanXL="3" height="100%">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorBankDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
 									<Title text="Bank Details"/>
@@ -179,25 +173,30 @@
 										<l:GridData id="bankSwitchGridData" span="L4 M4 S4"/>
 									</layoutData>
 								</Label>
-								<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}" enabled="{detailView>/editMode}"/> 
-								<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName" 
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-								<Input id="accountName" value="{accountName}" editable="{detailView>/editMode}"/>
-								<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry" 
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }" />
-								<ComboBox id="bankCountry" enabled="{detailView>/editMode}" selectedKey="{accountCountry}"
+								<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}" enabled="{detailView>/editMode}"/>
+								<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
+									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
+								<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry"
+									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<ComboBox id="bankCountry" enabled="{detailView>/editBankDetails}" selectedKey="{accountCountry}" change="onBankCountryChange"
 									items="{path: 'countries>/', sorter: { path: 'name' } }">
 									<core:Item text="{countries>name}" key="{countries>key}"/>
 								</ComboBox>
-								<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey" 
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-								<Input id="bankKey" value="{accountBankKey}" editable="{detailView>/editMode}"/>
-								<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber" 
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-								<Input id="accountNumber" value="{accountNumber}" editable="{detailView>/editMode}"/>
+								<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
+									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<ComboBox id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" selectedKey="{accountBankKey}"
+									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'accountBankKey'} }"
+									change="onBankKeyChange">
+									<core:Item text="{key} ({value})" key="{key}"/>
+								</ComboBox>
+								<!--<Input id="bankKey" value="{accountBankKey}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>-->
+								<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
+									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
 								<Label id="currencyLabel" text="{i18n>lblCurrency}" labelFor="currency"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-								<ComboBox id="currency" enabled="{detailView>/editMode}" selectedKey="{currency}"
+									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+								<ComboBox id="currency" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" selectedKey="{currency}"
 									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">
 									<core:Item text="{key} ({value})" key="{key}"/>
 								</ComboBox>
@@ -206,20 +205,37 @@
 					</Panel>
 				</VBox>
 			</HBox>
-			<UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
-				maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"
-				noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}">
-				<items>
-					<UploadCollectionItem contributor="{createdByName}" documentId="{attachmentId}" fileName="{fileName}" fileSize="{fileSize}"
-						mimeType="{mimeType}" visibleEdit="false" url="/sap/opu/odata/sap/z_vendor_req_srv/Attachments('{attachmentId}')/$value"/>
-				</items>
-			</UploadCollection>
+			<Panel>
+				<VBox>
+					<HBox>
+						<Switch id="stockVendorSwitch" value="{stock}" enabled="{detailView>/editMode}"/>
+						<Title class="procurementTypeTitle" text="We purchase materials/inventory from this vendor"/>
+					</HBox>
+					<HBox>
+						<Switch id="servicesVendorSwitch" value="{services}" enabled="{detailView>/editMode}"/>
+						<Title class="procurementTypeTitle" text="We purchase services from this vendor"/>
+					</HBox>
+				</VBox>
+			</Panel>
+			<Panel>
+				<UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
+					maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"
+					noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}">
+					<items>
+						<UploadCollectionItem contributor="{createdByName}" documentId="{attachmentId}" fileName="{fileName}" fileSize="{fileSize}"
+							mimeType="{mimeType}" visibleEdit="false" url="/sap/opu/odata/sap/z_vendor_req_srv/Attachments('{attachmentId}')/$value"/>
+					</items>
+				</UploadCollection>
+			</Panel>
 		</semantic:content>
 		<semantic:saveAction>
-			<semantic:SaveAction press="saveReq"/>
+			<semantic:SaveAction press="_saveReq" visible="{detailView>/editMode}"/>
 		</semantic:saveAction>
 		<semantic:customFooterContent>
-			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized"/>
+			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{detailView>/editMode}"/>
 		</semantic:customFooterContent>
+		<semantic:messagesIndicator>
+			<semantic:MessagesIndicator visible="{detailView>/editMode}" press="displayMessagesPopover"/>
+		</semantic:messagesIndicator>
 	</semantic:FullscreenPage>
 </mvc:View>

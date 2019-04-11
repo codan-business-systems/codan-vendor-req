@@ -4,7 +4,6 @@
     <HBox height="2rem"/>
     <MessageStrip text="{i18n>searchVendorExplainText}" showIcon="true"/>
     <HBox height="2rem"/>
-    <!--<Text id="searchVendorExplainText" text="{i18n>searchVendorExplainText}"/>-->
       <sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" columnsL="1" editable="false" emptySpanL="4" emptySpanM="4" id="SearchQueryParams" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" minWidth="1024" backgroundDesign="Transparent">
           <sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form" editable="true">
 	          <Label text="Vendor Search" width="100%" id="vendorNameLabel" textAlign="Right" labelFor="vendorName" class="vendorSearchLabel"/>

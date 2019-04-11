@@ -22,9 +22,14 @@
 					</ComboBox>
 					<Label/>
 					<Label id="bankVerifiedWithLabel" text="{i18n>lblBankVerifiedWith}" labelFor="bankVerifiedWith" required="true"/>
-					<Input id="bankVerifiedWith" value="{bankVerifiedWith}" placeholder="Enter the vendor contact name"/>
+					<Input id="bankVerifiedWith" value="{bankVerifiedWith}" placeholder="Enter the vendor contact name" 
+												valueState="{= !${detailView>/bankDetailPopup/bankVerifiedWithMsg} ? 'None' : 'Error' }"
+												valueStateText="{detailView>/bankDetailPopup/bankVerifiedWithMsg}"
+					/>
 					<Label id="bankVerifiedTelLabel" text="{i18n>bankVerifiedTelLabel}" labelFor="bankVerifiedTel" required="true"/>
-					<Input id="bankVerifiedTel" value="{bankVerifiedTel}"/>
+					<Input id="bankVerifiedTel" value="{bankVerifiedTel}"
+							valueState="{= !${detailView>/bankDetailPopup/bankVerifiedTelMsg} ? 'None' : 'Error' }"
+							valueStateText="{detailView>/bankDetailPopup/bankVerifiedTelMsg}"/>
 				</f:content>
 			</f:SimpleForm>
 		</content>
