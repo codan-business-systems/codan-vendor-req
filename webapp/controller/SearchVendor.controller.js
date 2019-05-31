@@ -1,8 +1,10 @@
 sap.ui.define([
 	"req/vendor/codan/controller/BaseController",
 	"sap/ui/model/json/JSONModel",
-	"sap/ui/model/Filter"
-], function (BaseController, JSONModel, Filter) {
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/ui/core/ValueState"
+], function (BaseController, JSONModel, Filter, FilterOperator, ValueState) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.SearchVendor", {
@@ -32,10 +34,48 @@ sap.ui.define([
 				tableBusyDelay: 0,
 				// search query parameters
 				vendorName: "",
-				searched: false
+				searched: false,
+				companyCode: ""
 			});
 
 			this.setModel(oViewModel, "worklistView");
+
+			// Show busy immediately while we load the select company dialog
+			sap.ui.core.BusyIndicator.show(100);
+
+			var that = this;
+
+			this.oCommonModel = this.getOwnerComponent().getModel("common");
+			this.oCommonModel.metadataLoaded().then(function () {
+				that.oCommonModel.read("/AppParameters", {
+					filters: [new Filter({
+						path: "application",
+						operator: FilterOperator.EQ,
+						value1: "VENDOR_REQ"
+					})],
+					success: function (data) {
+						var found = false;
+						data.results.forEach(function (o) {
+							switch (o.name) {
+							case "COMPANYCODE":
+								found = true;
+								oViewModel.setProperty("/companyCode", o.value);
+								break;
+							default:
+							}
+						});
+
+						if (!found) {
+							that.getOwnerComponent().getModel().metadataLoaded().then(function () {
+								that._showCompanySelectDialog();
+								sap.ui.core.BusyIndicator.hide();
+							});
+						} else {
+							sap.ui.core.BusyIndicator.hide();
+						}
+					}
+				});
+			});
 
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
@@ -45,8 +85,8 @@ sap.ui.define([
 				oViewModel.setProperty("/tableBusyDelay", iOriginalBusyDelay);
 			});
 		},
-		
-		createNewVendor: function() {
+
+		createNewVendor: function () {
 			this.getRouter().navTo("newVendor");
 		},
 
@@ -62,24 +102,24 @@ sap.ui.define([
 			}
 
 			this.byId("searchResultsTable").getBinding("items").filter(new Filter({
-				path: 'name',
+				path: "name",
 				operator: sap.ui.model.FilterOperator.Contains,
 				value1: searchString
 			}));
 
 		},
-		
+
 		/**
 		 * Navigate to an existing vendor
 		 * This may lead to a new request
 		 * @public
 		 */
-		onSelectVendor: function(event) {
+		onSelectVendor: function (event) {
 			this.getRouter().navTo("vendorFactSheet", {
 				id: event.getSource().getBindingContext().getProperty("id")
 			});
 		},
-		
+
 		/**
 		 * Triggered by the table's 'updateFinished' event: after new table
 		 * data is available, this handler method updates the table counter.
@@ -104,13 +144,50 @@ sap.ui.define([
 			this.getModel("worklistView").setProperty("/worklistTableTitle", sTitle);
 			this.getModel("worklistView").setProperty("/searched", oEvent.getParameter("reason") !== "Refresh");
 		},
-		
-		vendorNameChange: function(oEvent) {
+
+		vendorNameChange: function (oEvent) {
 			var btnSearch = this.getView().byId("btnSearch");
-			
+
 			if (btnSearch) {
 				btnSearch.setEnabled(!!oEvent.getParameter("newValue") && oEvent.getParameter("newValue").length > 2);
 			}
+		},
+
+		_showCompanySelectDialog: function () {
+
+			if (!this._oCompanySelectDialog) {
+				this._oCompanySelectDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.CompanySelect", this);
+				this.getView().addDependent(this._oCompanySelectDialog);
+			}
+
+			this._oCompanySelectDialog.open();
+			sap.ui.getCore().byId("company").setValueState(ValueState.None);
+		},
+		
+		closeCompanyCodeSelectDialog: function() {
+			
+			if (!this.getModel("worklistView").getProperty("/companyCode")) {
+				sap.ui.getCore().byId("company").setValueState(ValueState.Error);
+				return;
+			}
+			if (this._oCompanySelectDialog) {
+				this._oCompanySelectDialog.close();
+			}
+			
+			this.saveCompanyCodeParam();
+			
+		},
+		
+		saveCompanyCodeParam: function() {
+			
+			this.oCommonModel.create("/AppParameters", {
+				application: "VENDOR_REQ",
+				name: "COMPANYCODE",
+				value: this.getModel("worklistView").getProperty("/companyCode")
+			});
+			
+			this.oCommonModel.submitChanges();
+
 		}
 
 	});

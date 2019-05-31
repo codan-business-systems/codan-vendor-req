@@ -84,6 +84,15 @@
 					"defaultOperationMode": "",
 					"defaultUpdateMethod": "Put"
 				}
+			},
+			"common": {
+				"dataSource": "environmentInfo",
+				"preload": true,
+				"settings": {
+					"defaultBindingMode": "OneWay",
+					"defaultOperationMode": "",
+					"defaultUpdateMethod": "Put"
+				}
 			}
 		},
 		"resources": {
