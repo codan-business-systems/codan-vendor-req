@@ -8,22 +8,10 @@ sap.ui.define([
 	return Controller.extend("req.vendor.codan.controller.BaseController", {
 
 		onInit: function () {
-
-			// Initialise the countries data from the json file
-			var oCountriesModel = new JSONModel({
-				bCache: true
-			});
-			oCountriesModel.loadData("model/countries.json");
-			oCountriesModel.setSizeLimit(9999);
-			this.setModel(oCountriesModel, "countries");
-
-			// Initialise the regions data from the json file
-			var oRegionsModel = new JSONModel({
-				bCache: true
-			});
-			oRegionsModel.loadData("model/regions.json");
-			oRegionsModel.setSizeLimit(9999);
-			this.setModel(oRegionsModel, "regions");
+			
+			if (Controller.prototype.onInit) {
+				Controller.prototype.onInit.apply(this, arguments);
+			}
 
 		},
 

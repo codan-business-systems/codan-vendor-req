@@ -23,44 +23,53 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
+								<Label id="employeeLabel" text="Vendor is an Employee" labelFor="editBankDetailsSwitch">
+									<layoutData>
+										<l:GridData id="employeeGridData" span="L4 M4 S4"/>
+									</layoutData>
+								</Label>
+								<Switch id="employeeSwitch" state="{= ${vendorType} === 'ZEMP'}" enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/existingVendor} }" change="employeeTypeChange"/>
 								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1" required="{detailView>/editMode}"/>
 								<Input id="name1" value="{name1}" editable="{detailView>/editMode}"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
-								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn"/>
-								<Input id="abn" value="{abn}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm"/>
-								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}"/>
+								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
+								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'ZEMP'}"/>
+								<Input id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'ZEMP'}"/>
+								<Label id="filler1" labelFor="filler1Dummy"/>
+								<Input id="filler1Dummy" editable="false"/>
+								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'ZEMP'}"/>
+								<Input id="filler2Dummy" editable="false" visible="{= ${vendorType} === 'ZEMP'}"/>
 							</f:content>
 						</f:SimpleForm>
 					</Panel>
 				</VBox>
 				<VBox width="50%" height="100%">
-					<Panel id="orgAssignmentPanel" class="orgAssignmentPanel">
-						<Table id="orgAssignmentTable" items="{detailView>/orgAssignments}" class="sapUiSizeCompact"
-							busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
-							<!--<infoToolbar>
+					<Panel id="contactDetailsPanel">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
+							<f:toolbar>
 								<Toolbar>
-									<Text text="{i18n>txtOrgAssignmentExplain}" visible="{detailView>/existingVendor}"/>
-									<Text text="" visible="{= !${detailView>/existingVendor} }"/>
+									<Title text="Contact Details"/>
 								</Toolbar>
-							</infoToolbar>-->
-							<headerToolbar>
-								<Toolbar>
-									<Title text="{i18n>txtCompanyCodes}"/>
-								</Toolbar>
-							</headerToolbar>
-							<columns>
-								<Column id="colCompanyCode"/>
-								<Column id="colStockProcurement"/>
-							</columns>
-							<items>
-								<ColumnListItem type="Inactive">
-									<ObjectIdentifier text="{detailView>companyCodeText} ({detailView>companyCode})"/>
-									<Switch state="{detailView>companyActive}" enabled="{detailView>/editMode}"/>
-								</ColumnListItem>
-							</items>
-						</Table>
+							</f:toolbar>
+							<f:content>
+								<Label id="purchTelLabel" text="{i18n>lblPurchTel}" labelFor="purchTel" required="{detailView>/editMode}"/>
+								<Input id="purchTel" value="{purchTel}" editable="{detailView>/editMode}"/>
+								<Label id="purchFaxLabel" text="{i18n>lblPurchFax}" labelFor="purchFax"/>
+								<Input id="purchFax" value="{purchFax}" editable="{detailView>/editMode}"/>
+								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail" required="{detailView>/editMode}"/>
+								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
+								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
+								<Label id="accountsFaxLabel" text="{i18n>lblAccountsFax}" labelFor="accountsFax"/>
+								<Input id="accountsFax" value="{accountsFax}" editable="{detailView>/editMode}"/>
+								<Label id="accountsEmailLabel" text="{i18n>lblAccountsEmail}" labelFor="accountsEmail" required="{detailView>/editMode}"/>
+								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+							</f:content>
+						</f:SimpleForm>
 					</Panel>
 				</VBox>
 			</HBox>
@@ -129,28 +138,34 @@
 			</HBox>
 			<HBox width="100%">
 				<VBox width="50%" height="100%">
-					<Panel id="contactDetailsPanel">
-						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+					<Panel id="paymentMethodsPanel">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorPaymentMethods" layout="ResponsiveGridLayout" backgroundDesign="Solid"
 							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
-							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%" class="paymentMethodsForm">
 							<f:toolbar>
 								<Toolbar>
-									<Title text="Contact Details"/>
+									<Title text="Payment Methods"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="purchTelLabel" text="{i18n>lblPurchTel}" labelFor="purchTel" required="{detailView>/editMode}"/>
-								<Input id="purchTel" value="{purchTel}" editable="{detailView>/editMode}"/>
-								<Label id="purchFaxLabel" text="{i18n>lblPurchFax}" labelFor="purchFax"/>
-								<Input id="purchFax" value="{purchFax}" editable="{detailView>/editMode}"/>
-								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail" required="{detailView>/editMode}"/>
-								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
-								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
-								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
-								<Label id="accountsFaxLabel" text="{i18n>lblAccountsFax}" labelFor="accountsFax"/>
-								<Input id="accountsFax" value="{accountsFax}" editable="{detailView>/editMode}"/>
-								<Label id="accountsEmailLabel" text="{i18n>lblAccountsEmail}" labelFor="accountsEmail" required="{detailView>/editMode}"/>
-								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+								<Table id="paymentMethodsTable" items="{detailView>/paymentMethods}" class="sapUiSizeCompact"
+									busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
+									<!--<headerToolbar>
+										<Toolbar>
+											<Title text="{i18n>txtCompanyCodes}"/>
+										</Toolbar>
+									</headerToolbar>-->
+									<columns>
+										<Column id="colCompanyCode"/>
+										<Column id="colStockProcurement"/>
+									</columns>
+									<items>
+										<ColumnListItem type="Inactive">
+											<ObjectIdentifier text="{detailView>paymentMethodText} ({detailView>paymentMethodCode})"/>
+											<Switch state="{detailView>paymentMethodActive}" enabled="{detailView>/editMode}" change="paymentMethodChange"/>
+										</ColumnListItem>
+									</items>
+								</Table>
 							</f:content>
 						</f:SimpleForm>
 					</Panel>
@@ -173,7 +188,7 @@
 										<l:GridData id="bankSwitchGridData" span="L4 M4 S4"/>
 									</layoutData>
 								</Label>
-								<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}" enabled="{detailView>/editMode}"/>
+								<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}" enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }"/>
 								<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
 									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 								<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
@@ -186,8 +201,7 @@
 								<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
 									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 								<ComboBox id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" selectedKey="{accountBankKey}"
-									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'accountBankKey'} }"
-									change="onBankKeyChange">
+									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'accountBankKey'} }" change="onBankKeyChange">
 									<core:Item text="{key} ({value})" key="{key}"/>
 								</ComboBox>
 								<!--<Input id="bankKey" value="{accountBankKey}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>-->

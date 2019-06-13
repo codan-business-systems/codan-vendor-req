@@ -47,10 +47,7 @@
 			"tablet": true,
 			"phone": true
 		},
-		"supportedThemes": [
-			"sap_hcb",
-			"sap_belize"
-		]
+		"supportedThemes": ["sap_hcb", "sap_belize"]
 	},
 	"sap.ui5": {
 		"rootView": {
@@ -93,14 +90,28 @@
 					"defaultOperationMode": "",
 					"defaultUpdateMethod": "Put"
 				}
+			},
+			"countries": {
+				"type": "sap.ui.model.json.JSONModel",
+				"settings": {
+					"sizeLimit" : 9999
+				},
+				"uri": "model/countries.json",
+				"preload": true
+			},
+			"regions": {
+				"type": "sap.ui.model.json.JSONModel",
+				"settings": {
+					"sizeLimit" : 9999
+				},
+				"uri": "model/regions.json",
+				"preload": true
 			}
 		},
 		"resources": {
-			"css": [
-				{
-					"uri": "css/style.css"
-				}
-			]
+			"css": [{
+				"uri": "css/style.css"
+			}]
 		},
 		"routing": {
 			"config": {
@@ -111,29 +122,19 @@
 				"controlAggregation": "pages",
 				"controlId": "app"
 			},
-			"routes": [
-				{
-					"name": "searchVendor",
-					"pattern": "",
-					"target": [
-						"searchVendor"
-					]
-				},
-				{
-					"name": "vendorFactSheet",
-					"pattern": "vendor/{id}",
-					"target": [
-						"vendorFactSheet"
-					]
-				},
-				{
-					"name": "newVendor",
-					"pattern": "new",
-					"target": [
-						"newVendor"
-					]
-				}
-			],
+			"routes": [{
+				"name": "searchVendor",
+				"pattern": "",
+				"target": ["searchVendor"]
+			}, {
+				"name": "vendorFactSheet",
+				"pattern": "vendor/{id}",
+				"target": ["vendorFactSheet"]
+			}, {
+				"name": "newVendor",
+				"pattern": "new",
+				"target": ["newVendor"]
+			}],
 			"targets": {
 				"searchVendor": {
 					"viewType": "XML",
@@ -164,6 +165,10 @@
 	},
 	"sap.platform.hcp": {
 		"uri": "webapp",
+		"_version": "1.1.0"
+	},
+	"sap.platform.abap": {
+		"uri": "/sap/bc/ui5_ui5/sap/z_vendor_req/webapp",
 		"_version": "1.1.0"
 	}
 }

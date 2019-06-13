@@ -24,8 +24,9 @@ sap.ui.define([
 			bankDetailPopup: {
 				bankVerifiedWithMsg: "",
 				bankVerifiedTelMsg: ""
-			}
-
+			},
+			paymentMethods: [],
+			bankDetailsLocked: false
 		},
 
 		oMessageManager: {},
@@ -48,6 +49,9 @@ sap.ui.define([
 
 			this.getRouter().getRoute("vendorFactSheet").attachPatternMatched(this._onObjectMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
+
+			// Initialise the payment methods
+			this._initialisePaymentMethods();
 
 			// Initialise the message manager
 			this.oMessageManager = sap.ui.getCore().getMessageManager();
@@ -73,19 +77,21 @@ sap.ui.define([
 			// The create should populate the vendor details
 			// A request ID will only be assigned when the edit is made and a save is done
 			this._setBusy(true);
-			this.getModel().metadataLoaded().then(function () {
+			this._initialisePaymentMethods().then(function () {
 				this.getModel().create("/Requests", {
 					vendorId: this._sVendorId
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
 
-						this.getModel().read("/Vendors('" + this._sVendorId + "')/ToVendorOrgAssignments", {
-							success: function (orgAssignments) {
-								this.getModel("detailView").setProperty("/orgAssignments", orgAssignments.results);
-								this._bindView(this._sObjectPath);
-							}.bind(this)
+						var aPaymentMethods = this.getModel("detailView").getProperty("/paymentMethods");
+						aPaymentMethods = aPaymentMethods.map(function (o) {
+							o.paymentMethodActive = data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
+							return o;
 						});
+						this.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
+						this._bindView(this._sObjectPath);
+						this._setBusy(false);
 
 					}.bind(this)
 				});
@@ -116,14 +122,6 @@ sap.ui.define([
 				this._sObjectPath = this._oBindingContext.getPath();
 				this.getView().setBindingContext(this._oBindingContext);
 			}.bind(this));
-
-			this._setBusy(true);
-			this.getModel().read("/Vendors('')/ToVendorOrgAssignments", {
-				success: function (orgAssignments) {
-					this.getModel("detailView").setProperty("/orgAssignments", orgAssignments.results);
-					this._setBusy(false);
-				}.bind(this)
-			});
 
 		},
 
@@ -180,7 +178,6 @@ sap.ui.define([
 
 		onSubmit: function () {
 
-			// TODO: Validate Req
 			if (!this._validateReq()) {
 				this.displayMessagesPopover();
 				return;
@@ -254,7 +251,25 @@ sap.ui.define([
 
 		onNavBack: function () {
 
-			// TODO: Check for unsaved changes
+			var that = this;
+
+			var navBack = function () {
+				that.getModel().resetChanges();
+				that._navBack();
+			};
+
+			if (this.getModel("detailView").getProperty("/editMode") && this.getModel().hasPendingChanges()) {
+				MessageBox.confirm("This request will be lost. Do you wish to continue?", {
+					title: "Data Loss Confirmation",
+					onClose: function (sAction) {
+						if (sAction === sap.m.MessageBox.Action.OK) {
+							navBack();
+						}
+					}
+
+				});
+				return;
+			}
 			this._navBack();
 
 		},
@@ -299,6 +314,35 @@ sap.ui.define([
 			}
 
 		},
+		
+		paymentMethodChange: function(oEvent) {
+			var model = this.getModel("detailView");
+			// Ignore if we are turning a payment method off
+			if (!oEvent.getParameter("state")) {
+				return;
+			}
+			
+			// Check if bank details are required.
+			var oContext	   = oEvent.getSource().getBindingContext("detailView"),
+				oPaymentMethod = oContext.getObject();
+			if (oPaymentMethod.bankDetailsReqdFlag) {
+				MessageBox.confirm("Bank details are required for this payment method.\n\n OK to continue?", {
+					title: "Confirm Bank Details",
+					onClose: function(sAction) {
+						if (sAction !== MessageBox.Action.OK) {
+							model.setProperty(oContext.getPath() + "/paymentMethodActive", false);
+						} else {
+							model.setProperty("/editBankDetails", true);
+							model.setProperty("/bankDetailsLocked", true);
+						}
+					}
+				});
+			}
+		},
+		
+		employeeTypeChange: function(oEvent) {
+			this.getModel().setProperty(this.getView().getElementBinding().getPath() + "/vendorType", oEvent.getParameter("state") ? "ZEMP" : "");
+		},
 
 		_onBindingChange: function () {
 			var oView = this.getView(),
@@ -310,11 +354,6 @@ sap.ui.define([
 				this.getRouter().getTargets().display("objectNotFound");
 				return;
 			}
-
-			var oResourceBundle = this.getResourceBundle(),
-				oObject = oView.getBindingContext().getObject(),
-				sObjectId = oObject.customer,
-				sObjectName = oObject.customer;
 
 			// Everything went fine.
 			oViewModel.setProperty("/busy", false);
@@ -348,7 +387,13 @@ sap.ui.define([
 			this._setBusy(true);
 
 			// Merge the company assignments from the detail model
-			req.ToOrgAssignments = this.getModel("detailView").getProperty("/orgAssignments");
+			//req.ToOrgAssignments = this.getModel("detailView").getProperty("/orgAssignments");
+			req.paymentMethods = "";
+			this.getModel("detailView").getProperty("/paymentMethods").forEach(function(o) {
+				if (o.paymentMethodActive) {
+					req.paymentMethods += o.paymentMethodCode;	
+				}
+			});
 
 			model.create("/Requests", req, {
 				success: function (data) {
@@ -415,7 +460,35 @@ sap.ui.define([
 				target: "/Dummy",
 				processor: this.getOwnerComponent().getModel()
 			}));
-		}
+		},
 
+		_initialisePaymentMethods: function () {
+			var that = this;
+			return new Promise(function (resolve, reject) {
+				that.getOwnerComponent().getModel().metadataLoaded().then(function () {
+					if (that.getModel("detailView").getProperty("/paymentMethods").length > 0) {
+						resolve();
+						return;
+					}
+
+					that.getOwnerComponent().getModel().read("/PaymentMethods", {
+						success: function (data) {
+							var aPaymentMethods = data.results.map(function (o) {
+								return {
+									paymentMethodCode: o.paymentMethodCode,
+									paymentMethodText: o.paymentMethodText,
+									bankDetailsReqdFlag: o.bankDetailsReqdFlag,
+									addressReqdFlag: o.addressReqdFlag,
+									paymentMethodActive: false
+								};
+							});
+							that.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
+							resolve();
+						},
+						error: reject
+					});
+				});
+			});
+		}
 	});
 });
