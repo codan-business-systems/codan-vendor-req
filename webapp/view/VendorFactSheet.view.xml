@@ -28,19 +28,19 @@
 										<l:GridData id="employeeGridData" span="L4 M4 S4"/>
 									</layoutData>
 								</Label>
-								<Switch id="employeeSwitch" state="{= ${vendorType} === 'ZEMP'}" enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/existingVendor} }" change="employeeTypeChange"/>
+								<Switch id="employeeSwitch" state="{= ${vendorType} === 'E'}" enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/existingVendor} }" change="employeeTypeChange"/>
 								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1" required="{detailView>/editMode}"/>
 								<Input id="name1" value="{name1}" editable="{detailView>/editMode}"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
-								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'ZEMP'}"/>
-								<Input id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'ZEMP'}"/>
+								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"/>
+								<Input id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"/>
 								<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
-								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'ZEMP'}"/>
-								<Input id="filler2Dummy" editable="false" visible="{= ${vendorType} === 'ZEMP'}"/>
+								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'E'}"/>
+								<Input id="filler2Dummy" editable="false" visible="{= ${vendorType} === 'E'}"/>
 							</f:content>
 						</f:SimpleForm>
 					</Panel>

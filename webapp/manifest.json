@@ -128,11 +128,11 @@
 				"target": ["searchVendor"]
 			}, {
 				"name": "vendorFactSheet",
-				"pattern": "vendor/{id}",
+				"pattern": "vendor/{id}/{companyCode}",
 				"target": ["vendorFactSheet"]
 			}, {
 				"name": "newVendor",
-				"pattern": "new",
+				"pattern": "new/{companyCode}",
 				"target": ["newVendor"]
 			}],
 			"targets": {

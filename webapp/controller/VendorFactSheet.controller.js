@@ -2,12 +2,13 @@ sap.ui.define([
 	"req/vendor/codan/controller/BaseController",
 	"sap/ui/model/json/JSONModel",
 	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
 	"sap/m/MessageBox",
 	"sap/m/MessagePopover",
 	"sap/m/MessagePopoverItem",
 	"sap/ui/core/MessageType",
 	"sap/ui/core/message/Message"
-], function (BaseController, JSONModel, Filter, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message) {
+], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -38,6 +39,7 @@ sap.ui.define([
 		 */
 		onInit: function () {
 			var oViewModel;
+			var that = this;
 
 			// Call the BaseController's onInit method (in particular to initialise the extra JSON models)
 			BaseController.prototype.onInit.apply(this, arguments);
@@ -58,7 +60,6 @@ sap.ui.define([
 			this.setModel(this.oMessageManager.getMessageModel(), "message");
 
 			this.oMessageManager.registerObject(this.getView(), true);
-
 		},
 
 		/**
@@ -69,6 +70,7 @@ sap.ui.define([
 		 */
 		_onObjectMatched: function (oEvent) {
 			this._sVendorId = oEvent.getParameter("arguments").id;
+			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
 
 			this.getModel("detailView").setProperty("/existingVendor", !!this._sVendorId);
 			this.getModel("detailView").setProperty("/editBankDetails", !this._sVendorId);
@@ -79,7 +81,8 @@ sap.ui.define([
 			this._setBusy(true);
 			this._initialisePaymentMethods().then(function () {
 				this.getModel().create("/Requests", {
-					vendorId: this._sVendorId
+					vendorId: this._sVendorId,
+					companyCode: this._sCompanyCode
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
@@ -314,21 +317,21 @@ sap.ui.define([
 			}
 
 		},
-		
-		paymentMethodChange: function(oEvent) {
+
+		paymentMethodChange: function (oEvent) {
 			var model = this.getModel("detailView");
 			// Ignore if we are turning a payment method off
 			if (!oEvent.getParameter("state")) {
 				return;
 			}
-			
+
 			// Check if bank details are required.
-			var oContext	   = oEvent.getSource().getBindingContext("detailView"),
+			var oContext = oEvent.getSource().getBindingContext("detailView"),
 				oPaymentMethod = oContext.getObject();
 			if (oPaymentMethod.bankDetailsReqdFlag) {
 				MessageBox.confirm("Bank details are required for this payment method.\n\n OK to continue?", {
 					title: "Confirm Bank Details",
-					onClose: function(sAction) {
+					onClose: function (sAction) {
 						if (sAction !== MessageBox.Action.OK) {
 							model.setProperty(oContext.getPath() + "/paymentMethodActive", false);
 						} else {
@@ -339,9 +342,10 @@ sap.ui.define([
 				});
 			}
 		},
-		
-		employeeTypeChange: function(oEvent) {
-			this.getModel().setProperty(this.getView().getElementBinding().getPath() + "/vendorType", oEvent.getParameter("state") ? "ZEMP" : "");
+
+		employeeTypeChange: function (oEvent) {
+			this.getModel().setProperty(this.getView().getElementBinding().getPath() + "/vendorType", oEvent.getParameter("state") ? "E" :
+				"");
 		},
 
 		_onBindingChange: function () {
@@ -382,6 +386,7 @@ sap.ui.define([
 
 			if (bSubmit) {
 				model.setProperty(this._sObjectPath + "/status", "N");
+				model.setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
 			}
 
 			this._setBusy(true);
@@ -389,9 +394,9 @@ sap.ui.define([
 			// Merge the company assignments from the detail model
 			//req.ToOrgAssignments = this.getModel("detailView").getProperty("/orgAssignments");
 			req.paymentMethods = "";
-			this.getModel("detailView").getProperty("/paymentMethods").forEach(function(o) {
+			this.getModel("detailView").getProperty("/paymentMethods").forEach(function (o) {
 				if (o.paymentMethodActive) {
-					req.paymentMethods += o.paymentMethodCode;	
+					req.paymentMethods += o.paymentMethodCode;
 				}
 			});
 
@@ -439,6 +444,33 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
+
+			// For the payment methods specified, check if bank details and/or address are required
+			var paymentMethods = this.getModel("detailView").getProperty("/paymentMethods").filter(function (oPaymentMethod) {
+				return oPaymentMethod.paymentMethodActive;
+			});
+
+			paymentMethods.forEach(function (oPaymentMethod) {
+				if (oPaymentMethod.bankDetailsReqdFlag && (!req.hasBankDetails || req.accountBankKey)) {
+					messages.push(new Message({
+						message: "Bank Account is mandatory for payment method" + oPaymentMethod.paymentMethodText,
+						description: "Enter Bank Account details",
+						type: MessageType.Error,
+						target: this._sObjectPath + "/accountBankKey",
+						processor: this.getOwnerComponent().getModel()
+					}));
+				}
+				
+				if (oPaymentMethod.addressReqdFlag && !req.street && !req.poBox) {
+					messages.push(new Message({
+						message: "Address is mandatory for payment method" + oPaymentMethod.paymentMethodText,
+						description: "Enter Address details",
+						type: MessageType.Error,
+						target: this._sObjectPath + "/street",
+						processor: this.getOwnerComponent().getModel()
+					}));	
+				}
+			});
 
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);

@@ -87,7 +87,9 @@ sap.ui.define([
 		},
 
 		createNewVendor: function () {
-			this.getRouter().navTo("newVendor");
+			this.getRouter().navTo("newVendor", {
+				companyCode: this.getModel("worklistView").getProperty("/companyCode")	
+			});
 		},
 
 		/**
@@ -116,7 +118,8 @@ sap.ui.define([
 		 */
 		onSelectVendor: function (event) {
 			this.getRouter().navTo("vendorFactSheet", {
-				id: event.getSource().getBindingContext().getProperty("id")
+				id: event.getSource().getBindingContext().getProperty("id"),
+				companyCode: this.getModel("worklistView").getProperty("/companyCode")
 			});
 		},
 
