@@ -7,8 +7,9 @@ sap.ui.define([
 	"sap/m/MessagePopover",
 	"sap/m/MessagePopoverItem",
 	"sap/ui/core/MessageType",
-	"sap/ui/core/message/Message"
-], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message) {
+	"sap/ui/core/message/Message",
+	"sap/m/MessageToast"
+], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message, MessageToast) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -89,7 +90,7 @@ sap.ui.define([
 
 						var aPaymentMethods = this.getModel("detailView").getProperty("/paymentMethods");
 						aPaymentMethods = aPaymentMethods.map(function (o) {
-							o.paymentMethodActive = data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
+							o.paymentMethodActive = !!data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
 							return o;
 						});
 						this.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
@@ -192,6 +193,10 @@ sap.ui.define([
 			}
 
 			this._saveReq(true);
+		},
+
+		onSave: function () {
+			this._saveReq(false);
 		},
 
 		bankDetailsVerified: function () {
@@ -402,12 +407,19 @@ sap.ui.define([
 
 			model.create("/Requests", req, {
 				success: function (data) {
-					MessageBox.success(this.getResourceBundle().getText("msgCreateSuccess", [data.id]), {
-						title: "Success",
-						onClose: function () {
-							this._navBack();
-						}.bind(this)
-					});
+					if (bSubmit) {
+						model.resetChanges();
+						MessageBox.success(this.getResourceBundle().getText("msgCreateSuccess", [data.id]), {
+							title: "Success",
+							onClose: function () {
+								this._navBack();
+							}.bind(this)
+						});
+					} else {
+						MessageToast.show("Request has been saved successfully", {
+							duration: 10000	
+						});
+					}
 					this._setBusy(false);
 				}.bind(this),
 				error: function (error) {
@@ -421,21 +433,45 @@ sap.ui.define([
 
 			var messages = [];
 			var req = this.getModel().getProperty(this._sObjectPath);
-			this._resetMessages();
+			var that = this;
+			this.oMessageManager.removeAllMessages();
+			var mandatoryFields = [{
+				name: "name1",
+				shortText: "Name 1",
+				description: "Enter the vendor's name"
+			}, {
+				name: "purchTel",
+				shortText: "Purchasing Tel",
+				description: "Enter a telephone number"
+			}, {
+				name: "purchEmail",
+				shortText: "Purchasing Email",
+				description: "Enter an email address"
+			}, {
+				name: "accountsTel",
+				shortText: "Accounts Tel",
+				description: "Enter a telephone number"
+			}, {
+				name: "accountsEmail",
+				shortText: "Accounts Email",
+				description: "Enter an email address"
+			}];
 
-			// Name1 is mandatory
-			if (!req.name1) {
-				messages.push(new Message({
-					message: "Name 1 is mandatory",
-					description: "Enter the vendor's name",
-					type: MessageType.Error,
-					target: this._sObjectPath + "/name1",
-					processor: this.getOwnerComponent().getModel()
-				}));
-			}
+			// Check all mandatory fields
+			mandatoryFields.forEach(function (o) {
+				if (!req[o.name]) {
+					messages.push(new Message({
+						message: o.shortText + " is mandatory",
+						description: o.description,
+						type: MessageType.Error,
+						target: that._sObjectPath + "/" + o.name,
+						processor: that.getOwnerComponent().getModel()
+					}));
+				}
+			});
 
 			// ABN is mandatory for AU vendors
-			if (req.country === "AU" && !req.abn) {
+			if (req.country === "AU" && !req.abn && !req.vendorType === "E") {
 				messages.push(new Message({
 					message: "ABN is mandatory for AU companies",
 					description: "Enter the ABN/Tax Number of the vendor",
@@ -451,24 +487,24 @@ sap.ui.define([
 			});
 
 			paymentMethods.forEach(function (oPaymentMethod) {
-				if (oPaymentMethod.bankDetailsReqdFlag && (!req.hasBankDetails || req.accountBankKey)) {
+				if (oPaymentMethod.bankDetailsReqdFlag && (!req.hasBankDetails && (!req.accountBankKey || !req.accountNumber))) {
 					messages.push(new Message({
 						message: "Bank Account is mandatory for payment method" + oPaymentMethod.paymentMethodText,
 						description: "Enter Bank Account details",
 						type: MessageType.Error,
-						target: this._sObjectPath + "/accountBankKey",
-						processor: this.getOwnerComponent().getModel()
+						target: that._sObjectPath + "/accountBankKey",
+						processor: that.getOwnerComponent().getModel()
 					}));
 				}
-				
+
 				if (oPaymentMethod.addressReqdFlag && !req.street && !req.poBox) {
 					messages.push(new Message({
 						message: "Address is mandatory for payment method" + oPaymentMethod.paymentMethodText,
 						description: "Enter Address details",
 						type: MessageType.Error,
-						target: this._sObjectPath + "/street",
-						processor: this.getOwnerComponent().getModel()
-					}));	
+						target: that._sObjectPath + "/street",
+						processor: that.getOwnerComponent().getModel()
+					}));
 				}
 			});
 

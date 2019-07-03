@@ -23,7 +23,7 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="employeeLabel" text="Vendor is an Employee" labelFor="editBankDetailsSwitch">
+								<Label id="employeeLabel" text="Vendor is an Employee" labelFor="employeeSwitch">
 									<layoutData>
 										<l:GridData id="employeeGridData" span="L4 M4 S4"/>
 									</layoutData>
@@ -243,7 +243,7 @@
 			</Panel>
 		</semantic:content>
 		<semantic:saveAction>
-			<semantic:SaveAction press="_saveReq" visible="{detailView>/editMode}"/>
+			<semantic:SaveAction press="onSave" visible="{detailView>/editMode}"/>
 		</semantic:saveAction>
 		<semantic:customFooterContent>
 			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{detailView>/editMode}"/>
