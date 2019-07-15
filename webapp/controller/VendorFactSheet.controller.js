@@ -9,7 +9,8 @@ sap.ui.define([
 	"sap/ui/core/MessageType",
 	"sap/ui/core/message/Message",
 	"sap/m/MessageToast"
-], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message, MessageToast) {
+], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message,
+	MessageToast) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -88,13 +89,8 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
+						this._parsePaymentMethods(data);
 
-						var aPaymentMethods = this.getModel("detailView").getProperty("/paymentMethods");
-						aPaymentMethods = aPaymentMethods.map(function (o) {
-							o.paymentMethodActive = !!data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
-							return o;
-						});
-						this.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
 						this._bindView(this._sObjectPath);
 						this._setBusy(false);
 
@@ -107,27 +103,38 @@ sap.ui.define([
 			this.getModel("detailView").setProperty("/editMode", false);
 
 		},
-		
-		_onChangeRequestMatched: function(oEvent) {
+
+		_onChangeRequestMatched: function (oEvent) {
 			var oStartupParams = oEvent.getParameter("arguments")["?query"];
-			
+
 			if (!oStartupParams || !oStartupParams.id) {
-				return;	
+				return;
 			}
 			this._sRequestId = oStartupParams.id;
 			this._setBusy(true);
-			
+
 			this.getModel("detailView").setProperty("/existingVendor", true);
 			this.getModel("detailView").setProperty("/editBankDetails", false);
 			this.getModel("detailView").setProperty("/editMode", true);
-			
-			this.getOwnerComponent().getModel().metadataLoaded().then(function() {
-				var sObjectPath = this.getOwnerComponent().getModel().createKey("Requests", {
+
+			this.getOwnerComponent().getModel().metadataLoaded().then(function () {
+				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
 					id: this._sRequestId
 				});
-				this._bindView("/" + sObjectPath);
+				this._bindView(this._sObjectPath);
 			}.bind(this));
-			
+
+		},
+
+		_parsePaymentMethods: function (data) {
+
+			var aPaymentMethods = this.getModel("detailView").getProperty("/paymentMethods");
+			aPaymentMethods = aPaymentMethods.map(function (o) {
+				o.paymentMethodActive = !!data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
+				return o;
+			});
+			this.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
+
 		},
 
 		/**
@@ -195,9 +202,10 @@ sap.ui.define([
 							oViewModel.setProperty("/busy", true);
 						});
 					},
-					dataReceived: function () {
+					dataReceived: function (data) {
 						oViewModel.setProperty("/busy", false);
-					}
+						this._parsePaymentMethods(data);
+					}.bind(this)
 				}
 			});
 
@@ -439,7 +447,7 @@ sap.ui.define([
 						});
 					} else {
 						MessageToast.show("Request has been saved successfully", {
-							duration: 10000	
+							duration: 10000
 						});
 					}
 					this._setBusy(false);
