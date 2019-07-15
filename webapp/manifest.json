@@ -131,6 +131,7 @@
 				{
 					"name": "searchVendor",
 					"pattern": "",
+					"greedy": false,
 					"target": [
 						"searchVendor"
 					]
@@ -138,6 +139,13 @@
 				{
 					"name": "vendorFactSheet",
 					"pattern": "vendor/{id}/{companyCode}",
+					"target": [
+						"vendorFactSheet"
+					]
+				},
+				{
+					"name": "changeRequest",
+					"pattern": ":?query:",
 					"target": [
 						"vendorFactSheet"
 					]

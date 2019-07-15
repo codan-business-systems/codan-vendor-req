@@ -246,7 +246,7 @@
 			<semantic:SaveAction press="onSave" visible="{detailView>/editMode}"/>
 		</semantic:saveAction>
 		<semantic:customFooterContent>
-			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{detailView>/editMode}"/>
+			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{= ${detailView>/editMode} &amp;&amp; !${status}}"/>
 		</semantic:customFooterContent>
 		<semantic:messagesIndicator>
 			<semantic:MessagesIndicator visible="{detailView>/editMode}" press="displayMessagesPopover"/>

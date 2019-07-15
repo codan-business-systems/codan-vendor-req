@@ -51,6 +51,7 @@ sap.ui.define([
 			this.setModel(oViewModel, "detailView");
 
 			this.getRouter().getRoute("vendorFactSheet").attachPatternMatched(this._onObjectMatched, this);
+			this.getRouter().getRoute("changeRequest").attachPatternMatched(this._onChangeRequestMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
 
 			// Initialise the payment methods
@@ -105,6 +106,28 @@ sap.ui.define([
 			// Reset the edit mode
 			this.getModel("detailView").setProperty("/editMode", false);
 
+		},
+		
+		_onChangeRequestMatched: function(oEvent) {
+			var oStartupParams = oEvent.getParameter("arguments")["?query"];
+			
+			if (!oStartupParams || !oStartupParams.id) {
+				return;	
+			}
+			this._sRequestId = oStartupParams.id;
+			this._setBusy(true);
+			
+			this.getModel("detailView").setProperty("/existingVendor", true);
+			this.getModel("detailView").setProperty("/editBankDetails", false);
+			this.getModel("detailView").setProperty("/editMode", true);
+			
+			this.getOwnerComponent().getModel().metadataLoaded().then(function() {
+				var sObjectPath = this.getOwnerComponent().getModel().createKey("Requests", {
+					id: this._sRequestId
+				});
+				this._bindView("/" + sObjectPath);
+			}.bind(this));
+			
 		},
 
 		/**
@@ -391,7 +414,6 @@ sap.ui.define([
 
 			if (bSubmit) {
 				model.setProperty(this._sObjectPath + "/status", "N");
-				model.setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
 			}
 
 			this._setBusy(true);
