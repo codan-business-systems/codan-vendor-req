@@ -421,7 +421,7 @@ sap.ui.define([
 				req = model.getProperty(this._sObjectPath);
 
 			if (bSubmit) {
-				model.setProperty(this._sObjectPath + "/status", "N");
+				req.status = "N";
 			}
 
 			this._setBusy(true);
