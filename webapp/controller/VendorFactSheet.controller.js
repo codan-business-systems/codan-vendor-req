@@ -418,7 +418,9 @@ sap.ui.define([
 		_saveReq: function (bSubmit) {
 
 			var model = this.getModel(),
-				req = model.getProperty(this._sObjectPath);
+				req = model.getProperty(this._sObjectPath),
+				id = req.id,
+				bUpdateId = !id;
 
 			if (bSubmit) {
 				req.status = "N";
@@ -426,8 +428,7 @@ sap.ui.define([
 
 			this._setBusy(true);
 
-			// Merge the company assignments from the detail model
-			//req.ToOrgAssignments = this.getModel("detailView").getProperty("/orgAssignments");
+			// Merge payment methods from the detail model
 			req.paymentMethods = "";
 			this.getModel("detailView").getProperty("/paymentMethods").forEach(function (o) {
 				if (o.paymentMethodActive) {
@@ -435,27 +436,49 @@ sap.ui.define([
 				}
 			});
 
-			model.create("/Requests", req, {
-				success: function (data) {
-					if (bSubmit) {
-						model.resetChanges();
-						MessageBox.success(this.getResourceBundle().getText("msgCreateSuccess", [data.id]), {
-							title: "Success",
-							onClose: function () {
-								this._navBack();
-							}.bind(this)
-						});
-					} else {
-						MessageToast.show("Request has been saved successfully", {
-							duration: 10000
-						});
-					}
-					this._setBusy(false);
-				}.bind(this),
-				error: function (error) {
-					// TODO: Error handling
+			var fnSuccess = function (data) {
+
+				// Ensure that the view is updated with the new req id.
+				if (bUpdateId) {
+					id = data.id;
+					this._sObjectPath = "/" + model.createKey("Requests", {
+						id: data.id
+					});
+					this._bindView(this._sObjectPath);
 				}
-			});
+
+				if (bSubmit) {
+					model.resetChanges();
+					MessageBox.success(this.getResourceBundle().getText("msgCreateSuccess", [id]), {
+						title: "Success",
+						onClose: function () {
+							this._navBack();
+						}.bind(this)
+					});
+				} else {
+					MessageToast.show("Request has been saved successfully", {
+						duration: 10000
+					});
+				}
+				this._setBusy(false);
+			}.bind(this);
+
+			if (bUpdateId) {
+				model.create("/Requests", req, {
+					success: fnSuccess,
+					error: function (error) {
+						// TODO: Error handling
+					}
+				});
+			} else {
+
+				model.update(this._sObjectPath, req, {
+					success: fnSuccess,
+					error: function (error) {
+						// TODO: Error handling
+					}
+				});
+			}
 
 		},
 

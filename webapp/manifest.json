@@ -82,7 +82,7 @@
 				"settings": {
 					"defaultBindingMode": "TwoWay",
 					"defaultOperationMode": "",
-					"defaultUpdateMethod": "Put"
+					"defaultUpdateMethod": "PUT"
 				}
 			},
 			"common": {
@@ -91,7 +91,7 @@
 				"settings": {
 					"defaultBindingMode": "OneWay",
 					"defaultOperationMode": "",
-					"defaultUpdateMethod": "Put"
+					"defaultUpdateMethod": "PUT"
 				}
 			},
 			"countries": {
