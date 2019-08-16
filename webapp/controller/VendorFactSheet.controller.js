@@ -63,6 +63,8 @@ sap.ui.define([
 			this.setModel(this.oMessageManager.getMessageModel(), "message");
 
 			this.oMessageManager.registerObject(this.getView(), true);
+			
+			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
 		},
 
 		/**
@@ -90,6 +92,8 @@ sap.ui.define([
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
 						this._parsePaymentMethods(data);
+						this.resetRegionFilters(data.country);
+
 
 						this._bindView(this._sObjectPath);
 						this._setBusy(false);
@@ -102,6 +106,15 @@ sap.ui.define([
 			// Reset the edit mode
 			this.getModel("detailView").setProperty("/editMode", false);
 
+		},
+		
+		countryChange: function(oEvent) {
+			this.resetRegionFilters(oEvent.getSource().getSelectedKey());
+		},
+		
+		resetRegionFilters: function(sCountry) {
+			this.setRegionFilter(this.getView().byId("region"), sCountry);
+			this.setRegionFilter(this.getView().byId("poBoxRegion"), sCountry);
 		},
 
 		_onChangeRequestMatched: function (oEvent) {
@@ -203,6 +216,7 @@ sap.ui.define([
 						});
 					},
 					dataReceived: function (data) {
+					
 						oViewModel.setProperty("/busy", false);
 						this._parsePaymentMethods(data);
 					}.bind(this)
@@ -423,7 +437,11 @@ sap.ui.define([
 				bUpdateId = !id;
 
 			if (bSubmit) {
-				req.status = "N";
+				if (req.id) {
+					req.status = "N";
+				} else {
+					model.setProperty(this._sObjectPath + "/status", "N");	
+				}
 			}
 
 			this._setBusy(true);

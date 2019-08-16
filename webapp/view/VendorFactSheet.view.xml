@@ -86,7 +86,8 @@
 							</f:toolbar>
 							<f:content>
 								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country" required="{detailView>/editMode}"/>
-								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }">
+								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }"
+										  change="countryChange">
 									<core:Item text="{countries>name}" key="{countries>key}"/>
 								</ComboBox>
 								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street" required="{detailView>/editMode}"/>
