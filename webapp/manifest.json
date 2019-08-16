@@ -145,7 +145,7 @@
 				},
 				{
 					"name": "changeRequest",
-					"pattern": ":?query:",
+					"pattern": "/requests/{id}",
 					"target": [
 						"vendorFactSheet"
 					]

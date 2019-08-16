@@ -118,7 +118,7 @@ sap.ui.define([
 		},
 
 		_onChangeRequestMatched: function (oEvent) {
-			var oStartupParams = oEvent.getParameter("arguments")["?query"];
+			var oStartupParams = oEvent.getParameter("arguments");
 
 			if (!oStartupParams || !oStartupParams.id) {
 				return;
@@ -130,7 +130,7 @@ sap.ui.define([
 			this.getModel("detailView").setProperty("/editBankDetails", false);
 			this.getModel("detailView").setProperty("/editMode", true);
 
-			this.getOwnerComponent().getModel().metadataLoaded().then(function () {
+			this._initialisePaymentMethods().then(function () {
 				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
 					id: this._sRequestId
 				});
@@ -141,12 +141,18 @@ sap.ui.define([
 
 		_parsePaymentMethods: function (data) {
 
-			var aPaymentMethods = this.getModel("detailView").getProperty("/paymentMethods");
+			var oDetailModel = this.getModel("detailView"),
+				aPaymentMethods = oDetailModel.getProperty("/paymentMethods");
 			aPaymentMethods = aPaymentMethods.map(function (o) {
 				o.paymentMethodActive = !!data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
 				return o;
 			});
-			this.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
+			oDetailModel.setProperty("/paymentMethods", aPaymentMethods);
+			
+			// Bank details are present, set the modify bank details switch to on
+			if (data.accountBankKey) {
+				oDetailModel.setProperty("/editBankDetails", true);	
+			}
 
 		},
 
@@ -218,7 +224,7 @@ sap.ui.define([
 					dataReceived: function (data) {
 					
 						oViewModel.setProperty("/busy", false);
-						this._parsePaymentMethods(data);
+						this._parsePaymentMethods(data.getParameter ? data.getParameter("data") : data);
 					}.bind(this)
 				}
 			});
