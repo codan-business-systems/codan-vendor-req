@@ -400,8 +400,13 @@ sap.ui.define([
 		},
 
 		employeeTypeChange: function (oEvent) {
-			this.getModel().setProperty(this.getView().getElementBinding().getPath() + "/vendorType", oEvent.getParameter("state") ? "E" :
-				"");
+			var vendorType = oEvent.getParameter("state") ? "E" : "";
+			this.getModel().setProperty(this._sObjectPath + "/vendorType", vendorType);
+			
+			this.getView().byId("abnLabel").setVisible(vendorType !== "E");
+			this.getView().byId("abn").setVisible(vendorType !== "E");
+			this.getView().byId("filler2").setVisible(vendorType === "E");
+			this.getView().byId("filler2Dummy").setVisible(vendorType === "E");
 		},
 
 		_onBindingChange: function () {
