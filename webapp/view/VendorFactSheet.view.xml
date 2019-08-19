@@ -33,7 +33,7 @@
 								<Input id="name1" value="{name1}" editable="{detailView>/editMode}"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
-								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm"/>
+								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
 								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"/>
 								<Input id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"/>

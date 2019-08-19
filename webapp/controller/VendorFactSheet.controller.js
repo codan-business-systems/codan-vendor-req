@@ -63,8 +63,9 @@ sap.ui.define([
 			this.setModel(this.oMessageManager.getMessageModel(), "message");
 
 			this.oMessageManager.registerObject(this.getView(), true);
-			
+
 			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
+			this.getOwnerComponent().getModel("countries").setSizeLimit(9999);
 		},
 
 		/**
@@ -94,7 +95,6 @@ sap.ui.define([
 						this._parsePaymentMethods(data);
 						this.resetRegionFilters(data.country);
 
-
 						this._bindView(this._sObjectPath);
 						this._setBusy(false);
 
@@ -107,12 +107,12 @@ sap.ui.define([
 			this.getModel("detailView").setProperty("/editMode", false);
 
 		},
-		
-		countryChange: function(oEvent) {
+
+		countryChange: function (oEvent) {
 			this.resetRegionFilters(oEvent.getSource().getSelectedKey());
 		},
-		
-		resetRegionFilters: function(sCountry) {
+
+		resetRegionFilters: function (sCountry) {
 			this.setRegionFilter(this.getView().byId("region"), sCountry);
 			this.setRegionFilter(this.getView().byId("poBoxRegion"), sCountry);
 		},
@@ -148,10 +148,10 @@ sap.ui.define([
 				return o;
 			});
 			oDetailModel.setProperty("/paymentMethods", aPaymentMethods);
-			
+
 			// Bank details are present, set the modify bank details switch to on
 			if (data.accountBankKey) {
-				oDetailModel.setProperty("/editBankDetails", true);	
+				oDetailModel.setProperty("/editBankDetails", true);
 			}
 
 		},
@@ -162,9 +162,10 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
 		 * @private
 		 */
-		_onNewVendor: function () {
+		_onNewVendor: function (oEvent) {
 
-			var detailModel = this.getModel("detailView");
+			var detailModel = this.getModel("detailView"),
+				companyCode = oEvent.getParameter("arguments").companyCode;
 
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", true);
@@ -174,6 +175,8 @@ sap.ui.define([
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
 				this.getView().setBindingContext(this._oBindingContext);
+
+				this.getModel().setProperty(this._sObjectPath + "/companyCode", companyCode);
 			}.bind(this));
 
 		},
@@ -222,7 +225,7 @@ sap.ui.define([
 						});
 					},
 					dataReceived: function (data) {
-					
+
 						oViewModel.setProperty("/busy", false);
 						this._parsePaymentMethods(data.getParameter ? data.getParameter("data") : data);
 					}.bind(this)
@@ -334,11 +337,11 @@ sap.ui.define([
 		},
 
 		onBankCountryChange: function (oEvent) {
-			var bankCountry = oEvent.getParameter("newValue");
+			var bankCountry = oEvent.getSource().getSelectedKey();
 
-			this.byId("bankCountry").getBinding("items").filter(new Filter({
-				path: 'filterValue1',
-				operator: 'EQ',
+			this.byId("bankKey").getBinding("items").filter(new Filter({
+				path: "filterValue1",
+				operator: "EQ",
 				value1: bankCountry
 			}));
 		},
@@ -402,7 +405,7 @@ sap.ui.define([
 		employeeTypeChange: function (oEvent) {
 			var vendorType = oEvent.getParameter("state") ? "E" : "";
 			this.getModel().setProperty(this._sObjectPath + "/vendorType", vendorType);
-			
+
 			this.getView().byId("abnLabel").setVisible(vendorType !== "E");
 			this.getView().byId("abn").setVisible(vendorType !== "E");
 			this.getView().byId("filler2").setVisible(vendorType === "E");
@@ -451,7 +454,8 @@ sap.ui.define([
 				if (req.id) {
 					req.status = "N";
 				} else {
-					model.setProperty(this._sObjectPath + "/status", "N");	
+					model.setProperty(this._sObjectPath + "/status", "N");
+					req.status = "N";
 				}
 			}
 
@@ -537,6 +541,10 @@ sap.ui.define([
 				name: "accountsEmail",
 				shortText: "Accounts Email",
 				description: "Enter an email address"
+			}, {
+				name: "searchTerm",
+				shortText: "Search Term",
+				description: "Enter a search term"
 			}];
 
 			// Check all mandatory fields
@@ -589,6 +597,32 @@ sap.ui.define([
 					}));
 				}
 			});
+
+			// Payment method E is only valid for Australia
+			if (paymentMethods.find(function (p) {
+					return p.paymentMethodCode === "E";
+				}) && !req.accountCountry && req.accountCountry !== "AU") {
+				messages.push(new Message({
+					message: "Payment method E is only valid for AU Bank accounts",
+					description: "Choose payment method F",
+					type: MessageType.Error,
+					target: that._sObjectPath + "/accountCountry",
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
+
+			// Payment method F is only valid for outside Australia
+			if (paymentMethods.find(function (p) {
+					return p.paymentMethodCode === "F";
+				}) && !req.accountCountry && req.accountCountry === "AU") {
+				messages.push(new Message({
+					message: "Payment method F is only valid for non-AU Bank accounts",
+					description: "Choose payment method E",
+					type: MessageType.Error,
+					target: that._sObjectPath + "/accountCountry",
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
 
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);
