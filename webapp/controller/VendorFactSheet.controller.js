@@ -340,15 +340,10 @@ sap.ui.define([
 			var bankCountry = oEvent.getSource().getSelectedKey();
 
 			this.byId("bankKey").getBinding("items").filter(new Filter({
-				path: "filterValue1",
+				path: "filterValue",
 				operator: "EQ",
 				value1: bankCountry
 			}));
-		},
-
-		onBankKeyChange: function (oEvent) {
-			var bankKey = oEvent.getParameter("newValue");
-
 		},
 
 		displayMessagesPopover: function (oEvent) {
@@ -411,6 +406,47 @@ sap.ui.define([
 			this.getView().byId("filler2").setVisible(vendorType === "E");
 			this.getView().byId("filler2Dummy").setVisible(vendorType === "E");
 		},
+		
+		changeAttachment: function (oEvent) {
+			var oModel = this.getModel(),
+				upload = oEvent.getSource();
+			oModel.refreshSecurityToken();
+
+			upload.setUploadUrl("/sap/opu/odata/sap/Z_VENDOR_REQ_SRV/Attachments");
+			upload.addHeaderParameter(new sap.m.UploadCollectionParameter({
+				name: "x-csrf-token",
+				value: oModel.getHeaders()["x-csrf-token"]
+			}));
+			upload.addHeaderParameter(new sap.m.UploadCollectionParameter({
+				name: "slug",
+				value: oModel.getProperty(this.getView().getElementBinding().getPath() + "/id") + ";" + oEvent.getParameter("mParameters").files[0].name
+			}));
+		},
+
+		uploadComplete: function () {
+			var attachments = this.getView().byId("attachments");
+
+			var resetBusy = function () {
+				this.getModel("detailView").setProperty("/attachmentsBusy", false);
+			};
+
+			if (attachments) {
+				this.getModel().attachEventOnce("requestCompleted", resetBusy.bind(this), true);
+				this.getModel("detailView").setProperty("/attachmentsBusy", true);
+				attachments.getBinding("items").refresh();
+			}
+		},
+
+		deleteAttachment: function (oEvent) {
+			this.getModel().remove("/Attachments('" + oEvent.getParameter("documentId") + "')", {
+				success: function (data) {
+					sap.m.MessageToast.show(this.getResourceBundle().getText("msgAttachmentDeleted"), {
+						duration: 5000
+					});
+				}.bind(this)
+			});
+		},
+
 
 		_onBindingChange: function () {
 			var oView = this.getView(),
