@@ -8,9 +8,10 @@ sap.ui.define([
 	"sap/m/MessagePopoverItem",
 	"sap/ui/core/MessageType",
 	"sap/ui/core/message/Message",
-	"sap/m/MessageToast"
+	"sap/m/MessageToast",
+	"req/vendor/codan/model/postcodeValidator"
 ], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message,
-	MessageToast) {
+	MessageToast, postcodeValidator) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -603,6 +604,17 @@ sap.ui.define([
 					description: "Enter the ABN/Tax Number of the vendor",
 					type: MessageType.Error,
 					target: this._sObjectPath + "/abn",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			// Check that the postcode is valid
+			if (req.postcode && !postcodeValidator.validatePostcode(this.getModel("countries"), req.country, req.postcode)) {
+				messages.push(new Message({
+					message: "Postcode is invalid for country " + req.country,
+					description: "Enter a valid postcode",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/postcode",
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
