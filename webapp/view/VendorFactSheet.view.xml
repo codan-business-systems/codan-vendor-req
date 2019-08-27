@@ -56,12 +56,12 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="purchTelLabel" text="{i18n>lblPurchTel}" labelFor="purchTel" required="{detailView>/editMode}"/>
+								<Label id="purchTelLabel" text="{i18n>lblPurchTel}" labelFor="purchTel" required="{= ${detailView>/editMode} &amp;&amp; ${vendorType} !== 'E' }"/>
 								<Input id="purchTel" value="{purchTel}" editable="{detailView>/editMode}"/>
 								<Label id="purchFaxLabel" text="{i18n>lblPurchFax}" labelFor="purchFax"/>
 								<Input id="purchFax" value="{purchFax}" editable="{detailView>/editMode}"/>
-								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail" required="{detailView>/editMode}"/>
-								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail" required="{= ${detailView>/editMode} &amp;&amp; ${vendorType} !== 'E' }"/>
+								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}"/>
 								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
 								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
 								<Label id="accountsFaxLabel" text="{i18n>lblAccountsFax}" labelFor="accountsFax"/>

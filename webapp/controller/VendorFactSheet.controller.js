@@ -56,8 +56,6 @@ sap.ui.define([
 			this.getRouter().getRoute("changeRequest").attachPatternMatched(this._onChangeRequestMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
 
-			// Initialise the payment methods
-			this._initialisePaymentMethods();
 
 			// Initialise the message manager
 			this.oMessageManager = sap.ui.getCore().getMessageManager();
@@ -125,6 +123,7 @@ sap.ui.define([
 				return;
 			}
 			this._sRequestId = oStartupParams.id;
+			this._sCompanyCode = oStartupParams.companyCode;
 			this._setBusy(true);
 
 			this.getModel("detailView").setProperty("/existingVendor", true);
@@ -165,19 +164,19 @@ sap.ui.define([
 		 */
 		_onNewVendor: function (oEvent) {
 
-			var detailModel = this.getModel("detailView"),
-				companyCode = oEvent.getParameter("arguments").companyCode;
+			var detailModel = this.getModel("detailView");
+			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
 
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", true);
 			detailModel.setProperty("/editMode", true);
 
-			this.getModel().metadataLoaded().then(function () {
+			this._initialisePaymentMethods().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
 				this.getView().setBindingContext(this._oBindingContext);
 
-				this.getModel().setProperty(this._sObjectPath + "/companyCode", companyCode);
+				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
 			}.bind(this));
 
 		},
@@ -561,32 +560,42 @@ sap.ui.define([
 			var mandatoryFields = [{
 				name: "name1",
 				shortText: "Name 1",
-				description: "Enter the vendor's name"
+				description: "Enter the vendor's name",
+				notForEmployees: false
 			}, {
 				name: "purchTel",
 				shortText: "Purchasing Tel",
-				description: "Enter a telephone number"
+				description: "Enter a telephone number",
+				notForEmployees: true
 			}, {
 				name: "purchEmail",
 				shortText: "Purchasing Email",
-				description: "Enter an email address"
+				description: "Enter an email address",
+				notForEmployees: true
 			}, {
 				name: "accountsTel",
 				shortText: "Accounts Tel",
-				description: "Enter a telephone number"
+				description: "Enter a telephone number",
+				notForEmployees: false
 			}, {
 				name: "accountsEmail",
 				shortText: "Accounts Email",
-				description: "Enter an email address"
+				description: "Enter an email address",
+				notForEmployees: false
 			}, {
 				name: "searchTerm",
 				shortText: "Search Term",
-				description: "Enter a search term"
+				description: "Enter a search term",
+				notForEmployees: false
 			}];
 
 			// Check all mandatory fields
 			mandatoryFields.forEach(function (o) {
 				if (!req[o.name]) {
+					if (o.notForEmployees && req.vendorType === "E") {
+						return;
+					}
+					
 					messages.push(new Message({
 						message: o.shortText + " is mandatory",
 						description: o.description,
@@ -704,6 +713,13 @@ sap.ui.define([
 					}
 
 					that.getOwnerComponent().getModel().read("/PaymentMethods", {
+						filters: [
+							new Filter({
+								path: "companyCode",
+								operator: "EQ",
+								value1: that._sCompanyCode
+							})
+						],
 						success: function (data) {
 							var aPaymentMethods = data.results.map(function (o) {
 								return {
