@@ -1,5 +1,6 @@
 <mvc:View xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:semantic="sap.m.semantic" xmlns:f="sap.ui.layout.form" xmlns:core="sap.ui.core"
-	xmlns:suite="sap.suite.ui.commons" xmlns:l="sap.ui.layout" controllerName="req.vendor.codan.controller.VendorFactSheet">
+	xmlns:suite="sap.suite.ui.commons" xmlns:l="sap.ui.layout" 
+	xmlns:codan="req.vendor.codan.control" controllerName="req.vendor.codan.controller.VendorFactSheet">
 	<semantic:FullscreenPage id="vendorFactSheetPage" navButtonPress="onNavBack" showNavButton="true" title="{i18n>factSheetViewTitle}"
 		busy="{detailView>/busy}" busyIndicatorDelay="{detailView>/delay}">
 		<semantic:content>
@@ -233,14 +234,14 @@
 				</VBox>
 			</Panel>
 			<Panel>
-				<UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
+				<codan:UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
 					maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"
-					noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}">
-					<items>
+					noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}" suppressUpload="{= !${id} }" fakeUploadPress="showSaveConfirmation">
+					<codan:items>
 						<UploadCollectionItem contributor="{createdByName}" documentId="{attachmentId}" fileName="{fileName}" fileSize="{fileSize}"
 							mimeType="{mimeType}" visibleEdit="false" url="/sap/opu/odata/sap/z_vendor_req_srv/Attachments('{attachmentId}')/$value"/>
-					</items>
-				</UploadCollection>
+					</codan:items>
+				</codan:UploadCollection>
 			</Panel>
 		</semantic:content>
 		<semantic:saveAction>

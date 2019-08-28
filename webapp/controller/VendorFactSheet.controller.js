@@ -24,7 +24,7 @@ sap.ui.define([
 			helpPopoverTitle: "",
 			helpPopoverText: "",
 			submitAction: "Submit for Approval",
-			editBankDetails: true,
+			editBankDetails: false,
 			bankDetailPopup: {
 				bankVerifiedWithMsg: "",
 				bankVerifiedTelMsg: ""
@@ -55,7 +55,6 @@ sap.ui.define([
 			this.getRouter().getRoute("vendorFactSheet").attachPatternMatched(this._onObjectMatched, this);
 			this.getRouter().getRoute("changeRequest").attachPatternMatched(this._onChangeRequestMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
-
 
 			// Initialise the message manager
 			this.oMessageManager = sap.ui.getCore().getMessageManager();
@@ -168,7 +167,7 @@ sap.ui.define([
 			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
 
 			detailModel.setProperty("/existingVendor", false);
-			detailModel.setProperty("/editBankDetails", true);
+			detailModel.setProperty("/editBankDetails", false);
 			detailModel.setProperty("/editMode", true);
 
 			this._initialisePaymentMethods().then(function () {
@@ -406,8 +405,13 @@ sap.ui.define([
 			this.getView().byId("filler2").setVisible(vendorType === "E");
 			this.getView().byId("filler2Dummy").setVisible(vendorType === "E");
 		},
-		
+
 		changeAttachment: function (oEvent) {
+
+			var id = this.getModel().getProperty(this._sObjectPath).id,
+				that = this,
+				event = oEvent;
+
 			var oModel = this.getModel(),
 				upload = oEvent.getSource();
 			oModel.refreshSecurityToken();
@@ -419,7 +423,8 @@ sap.ui.define([
 			}));
 			upload.addHeaderParameter(new sap.m.UploadCollectionParameter({
 				name: "slug",
-				value: oModel.getProperty(this.getView().getElementBinding().getPath() + "/id") + ";" + oEvent.getParameter("mParameters").files[0].name
+				value: id + ";" + oEvent.getParameter("mParameters").files[
+					0].name
 			}));
 		},
 
@@ -447,6 +452,19 @@ sap.ui.define([
 			});
 		},
 
+		showSaveConfirmation: function (oEvent) {
+			var that = this;
+			MessageBox.confirm("The request must be saved before upload attachments.\n\nDo you wish to continue?", {
+				title: "Save Required",
+				onClose: function (sAction) {
+					if (sAction === "OK") {
+						that._saveReq(false, function () {
+							//oEvent.getSource().setSupressUpload(false);
+						});
+					}
+				}
+			});
+		},
 
 		_onBindingChange: function () {
 			var oView = this.getView(),
@@ -479,7 +497,7 @@ sap.ui.define([
 
 		},
 
-		_saveReq: function (bSubmit) {
+		_saveReq: function (bSubmit, fOnSuccess) {
 
 			var model = this.getModel(),
 				req = model.getProperty(this._sObjectPath),
@@ -530,6 +548,8 @@ sap.ui.define([
 					});
 				}
 				this._setBusy(false);
+
+				fOnSuccess && fOnSuccess();
 			}.bind(this);
 
 			if (bUpdateId) {
@@ -595,7 +615,7 @@ sap.ui.define([
 					if (o.notForEmployees && req.vendorType === "E") {
 						return;
 					}
-					
+
 					messages.push(new Message({
 						message: o.shortText + " is mandatory",
 						description: o.description,
@@ -616,7 +636,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the postcode is valid
 			if (req.postcode && !postcodeValidator.validatePostcode(this.getModel("countries"), req.country, req.postcode)) {
 				messages.push(new Message({
