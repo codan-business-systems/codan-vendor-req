@@ -689,7 +689,7 @@ sap.ui.define([
 			}
 
 			// Payment method F is only valid for outside Australia
-			if (paymentMethods.find(function (p) {
+			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
 					return p.paymentMethodCode === "F";
 				}) && !req.accountCountry && req.accountCountry === "AU") {
 				messages.push(new Message({
