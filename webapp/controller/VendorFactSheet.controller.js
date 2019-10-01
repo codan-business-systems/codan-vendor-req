@@ -676,7 +676,7 @@ sap.ui.define([
 			});
 
 			// Payment method E is only valid for Australia
-			if (paymentMethods.find(function (p) {
+			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
 					return p.paymentMethodCode === "E";
 				}) && !req.accountCountry && req.accountCountry !== "AU") {
 				messages.push(new Message({
