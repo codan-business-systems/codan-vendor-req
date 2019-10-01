@@ -36,7 +36,7 @@
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
-								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"/>
+								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}" required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
 								<Input id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"/>
 								<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
