@@ -549,7 +549,9 @@ sap.ui.define([
 				}
 				this._setBusy(false);
 
-				fOnSuccess && fOnSuccess();
+				if (fOnSuccess) {
+					fOnSuccess();
+				}
 			}.bind(this);
 
 			if (bUpdateId) {
