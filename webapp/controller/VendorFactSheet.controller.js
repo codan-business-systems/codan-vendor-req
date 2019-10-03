@@ -9,9 +9,10 @@ sap.ui.define([
 	"sap/ui/core/MessageType",
 	"sap/ui/core/message/Message",
 	"sap/m/MessageToast",
-	"req/vendor/codan/model/postcodeValidator"
+	"req/vendor/codan/model/postcodeValidator",
+	"sap/ui/core/ValueState"
 ], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message,
-	MessageToast, postcodeValidator) {
+	MessageToast, postcodeValidator, ValueState) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -338,7 +339,7 @@ sap.ui.define([
 		onBankCountryChange: function (oEvent) {
 			var bankCountry = oEvent.getSource().getSelectedKey();
 
-			this.byId("bankKey").getBinding("items").filter(new Filter({
+			this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
 				path: "filterValue",
 				operator: "EQ",
 				value1: bankCountry
@@ -464,6 +465,46 @@ sap.ui.define([
 					}
 				}
 			});
+		},
+		
+		maskAccountKey: function(oEvent) {
+			this.getModel().setProperty(this._sObjectPath + "/accountBankKey", this._formatBankKey(oEvent.getParameter("newValue"), 
+						this.getModel().getProperty(this._sObjectPath + "/accountCountry")));	
+		},
+		
+		checkAccountKey: function(oEvent) {
+			
+			oEvent.getSource().setValueState(ValueState.None);
+			var model = this.getModel(),
+				regex = new RegExp(/[^\s \(\)]+(?![^\(]*\))/),
+				newBankKey   = oEvent.getParameter("newValue").match(regex)[0],
+				key = model.createKey("/ValueHelpResults", {
+					property: "accountBankKey",
+					key: newBankKey
+				});
+							
+			if (!model.getProperty(key)) {
+				oEvent.getSource().setValueState(ValueState.Warning);
+				oEvent.getSource().setValueStateText("Bank account does not exist in SAP");
+				model.setProperty(this._sObjectPath + "/newBankNumber", true);
+			} else {
+				model.setProperty(this._sObjectPath + "/newBankNumber", false);
+			}
+			
+			model.setProperty(this._sObjectPath + "/accountBankKey", newBankKey);
+			
+		},
+		
+		_formatBankKey: function(sKey, sCountry) {
+			if (sCountry !== "AU" || sKey.length < 3 || sKey.indexOf("-") >= 0) {
+				return sKey;
+			}
+			
+			if (sKey.length === 3) {
+				return sKey + "-";
+			} else {
+				return sKey.substr(0,3) + "-" + sKey.substr(3);
+			}
 		},
 
 		_onBindingChange: function () {

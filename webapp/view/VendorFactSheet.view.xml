@@ -202,11 +202,11 @@
 								</ComboBox>
 								<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
 									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-								<ComboBox id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" selectedKey="{accountBankKey}"
-									items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'accountBankKey'} }" change="onBankKeyChange">
+								<Input id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }"
+									showSuggestion="true" suggestionItems="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'accountBankKey'} }"
+									liveChange="maskAccountKey" change="checkAccountKey">
 									<core:Item text="{key} ({value})" key="{key}"/>
-								</ComboBox>
-								<!--<Input id="bankKey" value="{accountBankKey}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>-->
+								</Input>
 								<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
 									required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 								<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
