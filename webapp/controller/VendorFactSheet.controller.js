@@ -240,6 +240,14 @@ sap.ui.define([
 				this.displayMessagesPopover();
 				return;
 			}
+			
+			// If this is a new bank, show the new bank dialog
+			if (this.getModel().getProperty(this._sObjectPath + "/newBankNumber") && 
+				!this.getModel().getProperty(this._sObjectPath + "/bankName")) {
+				this._showNewBankDialog();
+				return;
+			}
+			
 			// If bank details are entered, raise the verify dialog
 			if (this.getModel("detailView").getProperty("/editBankDetails")) {
 				this._showVerifyBankDialog();
@@ -473,12 +481,17 @@ sap.ui.define([
 		},
 		
 		checkAccountKey: function(oEvent) {
-			
+						
 			oEvent.getSource().setValueState(ValueState.None);
 			var model = this.getModel(),
 				regex = new RegExp(/[^\s \(\)]+(?![^\(]*\))/),
-				newBankKey   = oEvent.getParameter("newValue").match(regex)[0],
-				key = model.createKey("/ValueHelpResults", {
+				newBankKey   = oEvent.getParameter("newValue").match(regex)[0];
+				
+			newBankKey = this._formatBankKey(newBankKey, model.getProperty(this._sObjectPath + "/accountCountry"));
+			model.setProperty(this._sObjectPath + "/accountBankKey", newBankKey);
+			oEvent.getSource().setValue(newBankKey);
+			
+			var	key = model.createKey("/ValueHelpResults", {
 					property: "accountBankKey",
 					key: newBankKey
 				});
@@ -490,9 +503,7 @@ sap.ui.define([
 			} else {
 				model.setProperty(this._sObjectPath + "/newBankNumber", false);
 			}
-			
-			model.setProperty(this._sObjectPath + "/accountBankKey", newBankKey);
-			
+						
 		},
 		
 		_formatBankKey: function(sKey, sCountry) {
@@ -800,6 +811,48 @@ sap.ui.define([
 					});
 				});
 			});
+		},
+		
+		_showNewBankDialog: function() {
+			if (!this._oNewBankDialog) {
+				this._oNewBankDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.NewBank", this);
+				this.getView().addDependent(this._oNewBankDialog);
+			}
+
+			this._oNewBankDialog.open();
+			
+			this.setRegionFilter(sap.ui.getCore().byId("bankRegion"), this.getModel().getProperty(this._sObjectPath + "/accountCountry"));
+		},
+		
+		newBankDialogCancel: function() {
+			if (this._oNewBankDialog) {
+				if (this._oNewBankDialog.close) {
+					this._oNewBankDialog.close();
+				}
+				this._oNewBankDialog.destroy();
+				delete this._oNewBankDialog;
+			}
+		},
+		
+		newBankDialogOk: function() {
+			if (this.validateNewBankDialog()) {
+				this.newBankDialogCancel();
+				this.onSubmit();
+			}
+		},
+		
+		validateNewBankDialog: function() {
+			var req = this.getModel().getProperty(this._sObjectPath),
+				bankNameCtrl = sap.ui.getCore().byId("bankName"),
+				bankSwiftCtrl = sap.ui.getCore().byId("bankSwift");
+				
+			bankNameCtrl.setValueState(req.bankName ? ValueState.None : ValueState.Error);
+			bankNameCtrl.setValueStateText(req.bankName ? "" : "Bank Name is required");
+			bankSwiftCtrl.setValueState(req.bankSwiftCode ? ValueState.None : ValueState.Error);
+			bankSwiftCtrl.setValueStateText(req.bankSwiftCode ? "" : "Swift Code is required");
+			
+			return !!(req.bankName && req.bankSwiftCode);
+
 		}
 	});
 });

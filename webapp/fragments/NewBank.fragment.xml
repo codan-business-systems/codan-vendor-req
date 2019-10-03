@@ -1,0 +1,29 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="New Bank" contentWidth="40rem" id="newBankDetailDialog">
+		<content>
+			<MessageStrip showIcon="true" text="Bank number specified does not exist in SAP. Please provide detail to create this bank." 
+						  showCloseButton="false" type="Information" visible="{detailView>/editMode}"/>
+			
+			<f:SimpleForm editable="true" id="addItemForm" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
+				<f:content>
+					<Label id="bankNameLabel" required="true" labelFor="bankName" text="Bank Name"/>
+					<Input id="bankName" maxLength="60" value="{bankName}"/>
+					<Label id="bankSwiftLabel" required="true" labelFor="bankSwift" text="Swift Code"/>
+					<Input id="bankSwift" maxLength="11" value="{bankSwiftCode}"/>
+					<Label id="bankStreetLabel" labelFor="bankStreet" text="Street"/>
+					<Input id="bankStreet" maxLength="35" value="{bankStreet}"/>
+					<Label id="bankCityLabel" labelFor="bankCity" text="City"/>
+					<Input id="bankCity" value="{bankCity}"/>
+					<Label id="bankRegionLabel" labelFor="bankRegion" text="Region"/>
+					<Select id="bankRegion"  selectedKey="{bankRegion}" items="{path: 'regions>/', sorter: { path: 'name' }}">
+						<core:Item text="{regions>name}" key="{regions>key}"/>
+					</Select>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<buttons>
+			<Button text="{i18n>btnCancel}" type="Reject" press="newBankDialogCancel"/>
+			<Button text="OK" type="Emphasized" press="newBankDialogOk"/>
+		</buttons>
+	</Dialog>
+</core:FragmentDefinition>
