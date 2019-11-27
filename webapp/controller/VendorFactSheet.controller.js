@@ -530,7 +530,7 @@ sap.ui.define([
 				oEvent.getSource().setValueState(ValueState.Warning);
 				oEvent.getSource().setValueStateText("Bank account does not exist in SAP");
 				model.setProperty(this._sObjectPath + "/newBankNumber", true);
-				model.setProperty(this._sObjectPath + "/bankBranch", "";
+				model.setProperty(this._sObjectPath + "/bankBranch", "");
 				model.setProperty(this._sObjectPath + "/bankName", "");
 			} else {
 				model.setProperty(this._sObjectPath + "/newBankNumber", false);
