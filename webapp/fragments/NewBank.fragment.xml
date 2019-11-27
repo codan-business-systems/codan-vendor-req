@@ -8,6 +8,8 @@
 				<f:content>
 					<Label id="bankNameLabel" required="true" labelFor="bankName" text="Bank Name"/>
 					<Input id="bankName" maxLength="60" value="{bankName}"/>
+					<Label id="branchNameLabel" labelFor="branchName" text="Branch Name"/>
+					<Input id="branchName" maxLength="40" value="{bankBranch}"/>
 					<Label id="bankSwiftLabel" required="true" labelFor="bankSwift" text="Swift Code"/>
 					<Input id="bankSwift" maxLength="11" value="{bankSwiftCode}"/>
 					<Label id="bankStreetLabel" labelFor="bankStreet" text="Street"/>

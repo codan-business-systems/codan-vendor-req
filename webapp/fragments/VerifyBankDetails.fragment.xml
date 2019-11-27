@@ -11,6 +11,10 @@
 						items="{path: 'countries>/', sorter: { path: 'name' } }">
 						<core:Item text="{countries>name}" key="{countries>key}"/>
 					</ComboBox>
+					<Label id="verifyBankNameLabel" text="Bank Name" labelFor="verifyBankName"/>
+					<Input id="verifyBankName" editable="{newBankNumber}" value="{bankName}"/>
+					<Label id="verifyBankBranchLabel" text="Branch Name" labelFor="verifyBankBranch"/>
+					<Input id="verifyBankBranch" editable="{newBankNumber}" visible="{= ${newBankNumber} || !!${bankBranch} }" value="{bankBranch}"/>
 					<Label id="verifyBankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"/>
 					<Input id="verifyBankKey" value="{accountBankKey}" editable="{detailView>/editMode}"/>
 					<Label id="verifyAccountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"/>

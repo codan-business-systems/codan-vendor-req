@@ -31,7 +31,8 @@ sap.ui.define([
 				bankVerifiedTelMsg: ""
 			},
 			paymentMethods: [],
-			bankDetailsLocked: false
+			bankDetailsLocked: false,
+			banks: []
 		},
 
 		oMessageManager: {},
@@ -65,6 +66,7 @@ sap.ui.define([
 
 			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
 			this.getOwnerComponent().getModel("countries").setSizeLimit(9999);
+			this.getOwnerComponent().getModel().setSizeLimit(9999);
 		},
 
 		/**
@@ -345,13 +347,39 @@ sap.ui.define([
 		},
 
 		onBankCountryChange: function (oEvent) {
-			var bankCountry = oEvent.getSource().getSelectedKey();
+			var bankCountry = oEvent.getSource().getSelectedKey(),
+				detailModel = this.getModel("detailView");
+			
+			sap.ui.core.BusyIndicator.show();
+			
+			this.getModel().read("/Banks", {
+				filters: [
+					new Filter({
+						path: "countryKey",
+						operator: FilterOperator.EQ,
+						value1: bankCountry
+					})
+				],
+				success: function(data) {
+					var banks = data.results.map(function(o) {
+						return Object.assign({}, o);	
+					});
+					detailModel.setProperty("/banks", banks);
+					sap.ui.core.BusyIndicator.hide();
+				},
+				error: function(data) {
+					MessageBox.error("Error retrieving bank details", {
+						title: "An error has occurred"
+					});
+				}
+			});
+				
 
-			this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
+			/*this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
 				path: "filterValue",
 				operator: "EQ",
 				value1: bankCountry
-			}));
+			}));*/
 		},
 
 		displayMessagesPopover: function (oEvent) {
@@ -463,7 +491,7 @@ sap.ui.define([
 
 		showSaveConfirmation: function (oEvent) {
 			var that = this;
-			MessageBox.confirm("The request must be saved before upload attachments.\n\nDo you wish to continue?", {
+			MessageBox.confirm("The request must be saved before uploading attachments.\n\nDo you wish to continue?", {
 				title: "Save Required",
 				onClose: function (sAction) {
 					if (sAction === "OK") {
@@ -485,23 +513,29 @@ sap.ui.define([
 			oEvent.getSource().setValueState(ValueState.None);
 			var model = this.getModel(),
 				regex = new RegExp(/[^\s \(\)]+(?![^\(]*\))/),
-				newBankKey   = oEvent.getParameter("newValue").match(regex)[0];
+				newBankKey   = oEvent.getParameter("newValue").match(regex)[0],
+				countryKey = model.getProperty(this._sObjectPath + "/accountCountry");
 				
-			newBankKey = this._formatBankKey(newBankKey, model.getProperty(this._sObjectPath + "/accountCountry"));
+			newBankKey = this._formatBankKey(newBankKey, countryKey);
 			model.setProperty(this._sObjectPath + "/accountBankKey", newBankKey);
 			oEvent.getSource().setValue(newBankKey);
 			
-			var	key = model.createKey("/ValueHelpResults", {
-					property: "accountBankKey",
-					key: newBankKey
+			var	key = model.createKey("/Banks", {
+					countryKey: countryKey,
+					bankKey: newBankKey
 				});
 							
-			if (!model.getProperty(key)) {
+			var bank = model.getProperty(key);
+			if (!bank) {
 				oEvent.getSource().setValueState(ValueState.Warning);
 				oEvent.getSource().setValueStateText("Bank account does not exist in SAP");
 				model.setProperty(this._sObjectPath + "/newBankNumber", true);
+				model.setProperty(this._sObjectPath + "/bankBranch", "";
+				model.setProperty(this._sObjectPath + "/bankName", "");
 			} else {
 				model.setProperty(this._sObjectPath + "/newBankNumber", false);
+				model.setProperty(this._sObjectPath + "/bankBranch", bank.branchName);
+				model.setProperty(this._sObjectPath + "/bankName", bank.bankName);
 			}
 						
 		},
