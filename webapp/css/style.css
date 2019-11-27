@@ -18,3 +18,7 @@
 .paymentMethodsForm {
 	padding-bottom: 1.8rem;
 }
+
+.sapMPanelContent:not(.sapMPanelBGTransparent) {
+	border-bottom: none;	
+}
