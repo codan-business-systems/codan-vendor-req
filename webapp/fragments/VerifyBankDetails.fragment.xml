@@ -19,6 +19,8 @@
 					<Input id="verifyBankKey" value="{accountBankKey}" editable="{detailView>/editMode}"/>
 					<Label id="verifyAccountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"/>
 					<Input id="verifyAccountNumber" value="{accountNumber}" editable="{detailView>/editMode}"/>
+					<Label id="verifyIbanLabel" labelFor="verifyIban" text="IBAN" visible="{= ${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"/>
+					<Input id="verifyIban" value="{accountIban}" maxLength="34" visible="{= ${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" editable="{detailView>/editMode}"/>
 					<Label id="verifyCurrencyLabel" text="{i18n>lblCurrency}" labelFor="currency"/>
 					<ComboBox id="verifyCurrency" enabled="{detailView>/editMode}" selectedKey="{currency}"
 						items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">

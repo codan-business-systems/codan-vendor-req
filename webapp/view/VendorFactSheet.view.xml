@@ -151,10 +151,11 @@
 								labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%" class="paymentMethodsForm">
 								<f:toolbar>
 									<Toolbar>
-										<Title text="Payment Methods"/>
+										<Title text="Payments"/>
 									</Toolbar>
 								</f:toolbar>
 								<f:content>
+									<Label labelFor="paymentMethodsTable" text="Payment Methods"/>
 									<Table id="paymentMethodsTable" items="{detailView>/paymentMethods}" class="sapUiSizeCompact"
 										busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
 										<!--<headerToolbar>
@@ -173,6 +174,12 @@
 											</ColumnListItem>
 										</items>
 									</Table>
+									<Label id="labelPaymentTerms" text="Payment Terms" labelFor="paymentTerms"/>
+									<ComboBox id="paymentTerms" selectedKey="{paymentTerms}" enabled="{detailView>/editMode}"
+										items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'paymentTerms' } }" change="checkPaymentTerms"
+										maxLength="4">
+										<core:Item text="{key} ({value})" key="{key}"/>
+									</ComboBox>
 								</f:content>
 							</f:SimpleForm>
 						</Panel>
@@ -257,6 +264,20 @@
 							mimeType="{mimeType}" visibleEdit="false" url="/sap/opu/odata/sap/z_vendor_req_srv/Attachments('{attachmentId}')/$value"/>
 					</codan:items>
 				</codan:UploadCollection>
+			</Panel>
+			<Panel visible="{detailView>/editMode}">
+				<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyRequestNotes" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+					width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+					labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
+					<f:toolbar>
+						<Toolbar>
+							<Title text="Notes"/>
+						</Toolbar>
+					</f:toolbar>
+					<f:content>
+						<TextArea id="requestNotes" rows="5" growing="true" value="{notes}" width="100%"/>
+					</f:content>
+				</f:SimpleForm>
 			</Panel>
 		</semantic:content>
 		<semantic:saveAction>

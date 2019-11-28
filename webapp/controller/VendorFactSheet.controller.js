@@ -242,14 +242,14 @@ sap.ui.define([
 				this.displayMessagesPopover();
 				return;
 			}
-			
+
 			// If this is a new bank, show the new bank dialog
-			if (this.getModel().getProperty(this._sObjectPath + "/newBankNumber") && 
+			if (this.getModel().getProperty(this._sObjectPath + "/newBankNumber") &&
 				!this.getModel().getProperty(this._sObjectPath + "/bankName")) {
 				this._showNewBankDialog();
 				return;
 			}
-			
+
 			// If bank details are entered, raise the verify dialog
 			if (this.getModel("detailView").getProperty("/editBankDetails")) {
 				this._showVerifyBankDialog();
@@ -349,9 +349,9 @@ sap.ui.define([
 		onBankCountryChange: function (oEvent) {
 			var bankCountry = oEvent.getSource().getSelectedKey(),
 				detailModel = this.getModel("detailView");
-			
+
 			sap.ui.core.BusyIndicator.show();
-			
+
 			this.getModel().read("/Banks", {
 				filters: [
 					new Filter({
@@ -360,20 +360,19 @@ sap.ui.define([
 						value1: bankCountry
 					})
 				],
-				success: function(data) {
-					var banks = data.results.map(function(o) {
-						return Object.assign({}, o);	
+				success: function (data) {
+					var banks = data.results.map(function (o) {
+						return Object.assign({}, o);
 					});
 					detailModel.setProperty("/banks", banks);
 					sap.ui.core.BusyIndicator.hide();
 				},
-				error: function(data) {
+				error: function (data) {
 					MessageBox.error("Error retrieving bank details", {
 						title: "An error has occurred"
 					});
 				}
 			});
-				
 
 			/*this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
 				path: "filterValue",
@@ -502,29 +501,29 @@ sap.ui.define([
 				}
 			});
 		},
-		
-		maskAccountKey: function(oEvent) {
-			this.getModel().setProperty(this._sObjectPath + "/accountBankKey", this._formatBankKey(oEvent.getParameter("newValue"), 
-						this.getModel().getProperty(this._sObjectPath + "/accountCountry")));	
+
+		maskAccountKey: function (oEvent) {
+			this.getModel().setProperty(this._sObjectPath + "/accountBankKey", this._formatBankKey(oEvent.getParameter("newValue"),
+				this.getModel().getProperty(this._sObjectPath + "/accountCountry")));
 		},
-		
-		checkAccountKey: function(oEvent) {
-						
+
+		checkAccountKey: function (oEvent) {
+
 			oEvent.getSource().setValueState(ValueState.None);
 			var model = this.getModel(),
 				regex = new RegExp(/[^\s \(\)]+(?![^\(]*\))/),
-				newBankKey   = oEvent.getParameter("newValue").match(regex)[0],
+				newBankKey = oEvent.getParameter("newValue").match(regex)[0],
 				countryKey = model.getProperty(this._sObjectPath + "/accountCountry");
-				
+
 			newBankKey = this._formatBankKey(newBankKey, countryKey);
 			model.setProperty(this._sObjectPath + "/accountBankKey", newBankKey);
 			oEvent.getSource().setValue(newBankKey);
-			
-			var	key = model.createKey("/Banks", {
-					countryKey: countryKey,
-					bankKey: newBankKey
-				});
-							
+
+			var key = model.createKey("/Banks", {
+				countryKey: countryKey,
+				bankKey: newBankKey
+			});
+
 			var bank = model.getProperty(key);
 			if (!bank) {
 				oEvent.getSource().setValueState(ValueState.Warning);
@@ -537,18 +536,45 @@ sap.ui.define([
 				model.setProperty(this._sObjectPath + "/bankBranch", bank.branchName);
 				model.setProperty(this._sObjectPath + "/bankName", bank.bankName);
 			}
-						
+
 		},
-		
-		_formatBankKey: function(sKey, sCountry) {
+
+		checkPaymentTerms: function (oEvent) {
+
+			var model = this.getModel(),
+				paymentTermsKey = oEvent.getParameter("newValue").substring(0, 4),
+				valueHelpKey = model.createKey("/ValueHelpResults", {
+					property: "PAYMENTTERMS",
+					key: paymentTermsKey
+				}),
+				valueHelpObj = model.getProperty(valueHelpKey);
+
+			oEvent.getSource().setValueState(ValueState.None);
+
+			if (paymentTermsKey) {
+
+				model.setProperty("/paymentTerms", paymentTermsKey);
+				if (valueHelpObj) {
+					model.setProperty("/paymentTermsText", valueHelpObj.value);
+				} else {
+					oEvent.getSource().setValueState(ValueState.Error);
+					oEvent.getSource().setValueStateText("Payment terms are invalid");
+					model.setProperty("/paymentTermsText", "");
+				}
+
+			}
+
+		},
+
+		_formatBankKey: function (sKey, sCountry) {
 			if (sCountry !== "AU" || sKey.length < 3 || sKey.indexOf("-") >= 0) {
 				return sKey;
 			}
-			
+
 			if (sKey.length === 3) {
 				return sKey + "-";
 			} else {
-				return sKey.substr(0,3) + "-" + sKey.substr(3);
+				return sKey.substr(0, 3) + "-" + sKey.substr(3);
 			}
 		},
 
@@ -735,6 +761,17 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
+			
+			// Check that the payment terms are valid
+			if (req.paymentTerms && !req.paymentTermsText) {
+				messages.push(new Message({
+					message: "Payment terms are invalid",
+					description: "Select valid payment terms from the list",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/paymentTerms",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
 
 			// For the payment methods specified, check if bank details and/or address are required
 			var paymentMethods = this.getModel("detailView").getProperty("/paymentMethods").filter(function (oPaymentMethod) {
@@ -846,19 +883,19 @@ sap.ui.define([
 				});
 			});
 		},
-		
-		_showNewBankDialog: function() {
+
+		_showNewBankDialog: function () {
 			if (!this._oNewBankDialog) {
 				this._oNewBankDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.NewBank", this);
 				this.getView().addDependent(this._oNewBankDialog);
 			}
 
 			this._oNewBankDialog.open();
-			
+
 			this.setRegionFilter(sap.ui.getCore().byId("bankRegion"), this.getModel().getProperty(this._sObjectPath + "/accountCountry"));
 		},
-		
-		newBankDialogCancel: function() {
+
+		newBankDialogCancel: function () {
 			if (this._oNewBankDialog) {
 				if (this._oNewBankDialog.close) {
 					this._oNewBankDialog.close();
@@ -867,24 +904,24 @@ sap.ui.define([
 				delete this._oNewBankDialog;
 			}
 		},
-		
-		newBankDialogOk: function() {
+
+		newBankDialogOk: function () {
 			if (this.validateNewBankDialog()) {
 				this.newBankDialogCancel();
 				this.onSubmit();
 			}
 		},
-		
-		validateNewBankDialog: function() {
+
+		validateNewBankDialog: function () {
 			var req = this.getModel().getProperty(this._sObjectPath),
 				bankNameCtrl = sap.ui.getCore().byId("bankName"),
 				bankSwiftCtrl = sap.ui.getCore().byId("bankSwift");
-				
+
 			bankNameCtrl.setValueState(req.bankName ? ValueState.None : ValueState.Error);
 			bankNameCtrl.setValueStateText(req.bankName ? "" : "Bank Name is required");
 			bankSwiftCtrl.setValueState(req.bankSwiftCode ? ValueState.None : ValueState.Error);
 			bankSwiftCtrl.setValueStateText(req.bankSwiftCode ? "" : "Swift Code is required");
-			
+
 			return !!(req.bankName && req.bankSwiftCode);
 
 		}
