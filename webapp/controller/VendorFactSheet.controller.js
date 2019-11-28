@@ -44,7 +44,6 @@ sap.ui.define([
 		 */
 		onInit: function () {
 			var oViewModel;
-			var that = this;
 
 			// Call the BaseController's onInit method (in particular to initialise the extra JSON models)
 			BaseController.prototype.onInit.apply(this, arguments);
@@ -293,14 +292,24 @@ sap.ui.define([
 		},
 
 		toggleEditMode: function () {
-			var model = this.getModel("detailView"),
-				editMode = model.getProperty("/editMode");
+			var viewModel = this.getModel("detailView"),
+				model = this.getModel(),
+				editMode = viewModel.getProperty("/editMode"),
+				that = this;
 
-			// TODO: Check for changes and raise a confirmation
-
-			model.setProperty("/editMode", !editMode);
-
-			if (!editMode) {
+			if (editMode && model.hasPendingChanges()) {
+				MessageBox.confirm("All changes will be reset.\n\nDo you wish to continue?", {
+					title: "Data Loss Confirmation",
+					onClose: function (sAction) {
+						if (sAction === "OK") {
+							model.resetChanges();
+							viewModel.setProperty("/editMode", !editMode);
+							that._resetMessages();
+						}
+					}
+				});
+			} else {
+				viewModel.setProperty("/editMode", !editMode);
 				this._resetMessages();
 			}
 
@@ -761,7 +770,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the payment terms are valid
 			if (req.paymentTerms && !req.paymentTermsText) {
 				messages.push(new Message({
@@ -839,13 +848,16 @@ sap.ui.define([
 				return;
 			}
 			this.oMessageManager.removeAllMessages();
-			this.oMessageManager.addMessages(new Message({
-				message: "Submit the form when complete",
-				description: "Update the fields that require changing. Once complete, press the Submit for Approval button.",
-				type: MessageType.Information,
-				target: "/Dummy",
-				processor: this.getOwnerComponent().getModel()
-			}));
+
+			if (this.getModel("detailView").getProperty("/editMode")) {
+				this.oMessageManager.addMessages(new Message({
+					message: "Submit the form when complete",
+					description: "Update the fields that require changing. Once complete, press the Submit for Approval button.",
+					type: MessageType.Information,
+					target: "/Dummy",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
 		},
 
 		_initialisePaymentMethods: function () {
