@@ -1,0 +1,30 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="Audit Questions" contentWidth="40rem" id="auditQuestionsDialog" class="auditQuestionsDialog">
+		<content>
+			<MessageStrip text="Please answer the below questions to finalise this vendor request."/>
+			<List id="questionList" items="{ path: 'ToQuestions', filters: { path: 'status', operator: 'NE', value1: '' } }">
+				<CustomListItem class="questionnaireLI">
+					<Label text="{questionText}" required="{ parts: ['status'], formatter: '.formatter.questionMandatory' }" class="questionnaireRBGLabel"/>
+					<RadioButtonGroup selectedIndex="{ parts: ['yesNo'], formatter: '.formatter.yesNoSelectedIndex' }" select="questionnaireSelectionChange"
+						visible="{ parts: [ 'responseType' ], formatter: '.formatter.yesNoResponseRequired' }" columns="2" class="questionnaireRBG">
+						<buttons>
+							<RadioButton text="No"/>
+							<RadioButton text="Yes"/>
+						</buttons>
+					</RadioButtonGroup>
+					<TextArea id="freeTextDetails" text="{responseText}" placeholder="Provide details"
+						visible="{ parts: [ 'responseType' ], formatter: '.formatter.responseTextVisible' }"
+						enabled="{ parts: [ 'responseType', 'yesNo' ], formatter: '.formatter.responseTextEnabled' }" 
+						liveChange="updateQuestionnaireResponseText" width="100%"/>
+				</CustomListItem>
+			</List>
+			<HBox height="2rem"/>
+		</content>
+		<endButton>
+			<Button text="{i18n>btnCancel}" type="Reject" press="closeQuestionnaireDialog"/>
+		</endButton>
+		<beginButton>
+			<Button text="OK" type="Emphasized" press="questionnaireOk"/>
+		</beginButton>
+	</Dialog>
+</core:FragmentDefinition>

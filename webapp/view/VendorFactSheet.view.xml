@@ -242,7 +242,7 @@
 					</VBox>
 				</HBox>
 			</HBox>
-			<Panel>
+			<!--<Panel>
 				<VBox>
 					<HBox>
 						<Switch id="stockVendorSwitch" value="{stock}" enabled="{detailView>/editMode}"/>
@@ -253,7 +253,7 @@
 						<Title class="procurementTypeTitle" text="We purchase services from this vendor"/>
 					</HBox>
 				</VBox>
-			</Panel>
+			</Panel>-->
 			<Panel>
 				<codan:UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
 					maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"

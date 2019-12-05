@@ -22,3 +22,25 @@
 .sapMPanelContent:not(.sapMPanelBGTransparent) {
 	border-bottom: none;	
 }
+
+
+.questionnaireRBG {
+	float: right;
+	padding-right: 1rem;
+}
+
+.questionnaireRBGLabel {
+	line-height: 48px;	
+	padding-left: 1rem;
+	overflow: visible;
+	overflow-wrap: normal;
+}
+
+.questionnaireLI {
+	margin-top: 1em;
+	border: 1px solid black;
+}
+
+.auditQuestionsDialog {
+	padding-bottom: 1em !important;
+}

@@ -10,9 +10,10 @@ sap.ui.define([
 	"sap/ui/core/message/Message",
 	"sap/m/MessageToast",
 	"req/vendor/codan/model/postcodeValidator",
-	"sap/ui/core/ValueState"
+	"sap/ui/core/ValueState",
+	"req/vendor/codan/model/formatter"
 ], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, MessagePopover, MessagePopoverItem, MessageType, Message,
-	MessageToast, postcodeValidator, ValueState) {
+	MessageToast, postcodeValidator, ValueState, formatter) {
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
@@ -36,6 +37,8 @@ sap.ui.define([
 		},
 
 		oMessageManager: {},
+
+		formatter: formatter,
 
 		/**
 		 * Called when the worklist controller is instantiated, sets initial
@@ -236,26 +239,36 @@ sap.ui.define([
 		},
 
 		onSubmit: function () {
+			var that = this;
 
 			if (!this._validateReq()) {
 				this.displayMessagesPopover();
 				return;
 			}
 
+			// Show the questionnaire
+			this._openQuestionnaireDialog();
+
+		},
+
+		continueSubmissionAfterQuestionnaire: function () {
+
+			var that = this;
+
 			// If this is a new bank, show the new bank dialog
-			if (this.getModel().getProperty(this._sObjectPath + "/newBankNumber") &&
-				!this.getModel().getProperty(this._sObjectPath + "/bankName")) {
-				this._showNewBankDialog();
+			if (that.getModel().getProperty(that._sObjectPath + "/newBankNumber") &&
+				!that.getModel().getProperty(that._sObjectPath + "/bankName")) {
+				that._showNewBankDialog();
 				return;
 			}
 
 			// If bank details are entered, raise the verify dialog
-			if (this.getModel("detailView").getProperty("/editBankDetails")) {
-				this._showVerifyBankDialog();
+			if (that.getModel("detailView").getProperty("/editBankDetails")) {
+				that._showVerifyBankDialog();
 				return;
 			}
 
-			this._saveReq(true);
+			that._saveReq(true);
 		},
 
 		onSave: function () {
@@ -896,6 +909,16 @@ sap.ui.define([
 			});
 		},
 
+		_openQuestionnaireDialog: function () {
+
+			if (!this._oQuestionDialog) {
+				this._oQuestionDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.Questionnaire", this);
+				this.getView().addDependent(this._oQuestionDialog);
+			}
+
+			this._oQuestionDialog.open();
+		},
+
 		_showNewBankDialog: function () {
 			if (!this._oNewBankDialog) {
 				this._oNewBankDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.NewBank", this);
@@ -936,6 +959,75 @@ sap.ui.define([
 
 			return !!(req.bankName && req.bankSwiftCode);
 
+		},
+
+		questionnaireSelectionChange: function (event) {
+			var sourcePath = event.getSource().getBindingContext().getPath(),
+				newValue = event.getParameter("selectedIndex") === 1 ? "X" : "-";
+
+			this.getModel().setProperty(sourcePath + "/yesNo", newValue);
+			if (event.getParameter("selectedIndex") !== 1) {
+				this.getModel().setProperty(sourcePath + "/responseText", "");
+			}
+			event.getSource().setValueState(ValueState.None);
+		},
+
+		closeQuestionnaireDialog: function () {
+			if (this._oQuestionDialog) {
+				this._oQuestionDialog.close();
+			}
+
+			MessageToast.show("Submission Cancelled", {
+				duration: 5000
+			});
+		},
+
+		questionnaireOk: function (event) {
+			if (this.validateQuestionnaire()) {
+				this.continueSubmissionAfterQuestionnaire();
+			}
+		},
+
+		validateQuestionnaire: function (event) {
+			var list = sap.ui.getCore().byId("questionList"),
+				listItems = list.getItems(),
+				result = true;
+
+			listItems.forEach(function (l) {
+
+				var q = l.getBindingContext().getObject(),
+					rbg = l.getContent()[1],
+					txt = l.getContent()[2];
+
+				rbg.setValueState(ValueState.None);
+				txt.setValueState(ValueState.None);
+
+				if (formatter.questionMandatory(q.status)) {
+					if (!q.yesNo && formatter.yesNoResponseRequired(q.responseType)) {
+						rbg.setValueState(ValueState.Error);
+						result = false;
+					}
+
+					if (q.responseType === "TXT" && !q.responseText) {
+						txt.setValueState(ValueState.Error);
+						txt.setValueStateText("Response required");
+						result = false;
+					}
+
+				}
+
+				if (q.responseType === "YNT" && q.yesNo === "X" && !q.responseText) {
+					txt.setValueState(ValueState.Error);
+					txt.setValueStateText("Response required");
+					result = false;
+				}
+			});
+			
+			return result;
+		},
+		
+		updateQuestionnaireResponseText: function(event) {
+			this.getModel().setProperty(event.getSource().getBindingContext().getPath() + "/responseText", event.getParameter("newValue"));	
 		}
 	});
 });
