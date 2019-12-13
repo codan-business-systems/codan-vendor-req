@@ -972,18 +972,21 @@ sap.ui.define([
 			event.getSource().setValueState(ValueState.None);
 		},
 
-		closeQuestionnaireDialog: function () {
+		closeQuestionnaireDialog: function (bSilent) {
 			if (this._oQuestionDialog) {
 				this._oQuestionDialog.close();
 			}
 
-			MessageToast.show("Submission Cancelled", {
-				duration: 5000
-			});
+			if (!bSilent || typeof bSilent !== "boolean") {
+				MessageToast.show("Submission Cancelled", {
+					duration: 5000
+				});
+			}
 		},
 
 		questionnaireOk: function (event) {
 			if (this.validateQuestionnaire()) {
+				this.closeQuestionnaireDialog(true);
 				this.continueSubmissionAfterQuestionnaire();
 			}
 		},
