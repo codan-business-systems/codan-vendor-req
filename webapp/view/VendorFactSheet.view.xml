@@ -216,7 +216,7 @@
 									<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
 										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 									<Input id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" showSuggestion="true"
-										suggestionItems="{detailView>/banks}" change="checkAccountKey">
+										suggestionItems="{detailView>/banks}" change="checkAccountKey" value="{accountBankKey}">
 										<core:Item text="{detailView>bankKey} ({detailView>bankName})" key="{detailView>bankKey}"/>
 									</Input>
 									<Label id="bankSwiftKeyLabel" text="Swift Key" labelFor="bankSwiftKey"
