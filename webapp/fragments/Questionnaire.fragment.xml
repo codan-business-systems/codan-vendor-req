@@ -2,19 +2,20 @@
 	<Dialog title="Audit Questions" contentWidth="40rem" id="auditQuestionsDialog" class="auditQuestionsDialog">
 		<content>
 			<MessageStrip text="Please answer the below questions to finalise this vendor request."/>
-			<List id="questionList" items="{ path: 'ToQuestions', filters: { path: 'status', operator: 'NE', value1: '' } }">
+			<!-- > -->
+			<List id="questionList" items="{ path: 'detailView>/Questions', filters: { path: 'status', operator: 'NE', value1: '' } }">
 				<CustomListItem class="questionnaireLI">
-					<Label text="{questionText}" required="{ parts: ['status'], formatter: '.formatter.questionMandatory' }" class="questionnaireRBGLabel"/>
-					<RadioButtonGroup selectedIndex="{ parts: ['yesNo'], formatter: '.formatter.yesNoSelectedIndex' }" select="questionnaireSelectionChange"
-						visible="{ parts: [ 'responseType' ], formatter: '.formatter.yesNoResponseRequired' }" columns="2" class="questionnaireRBG">
+					<Label text="{detailView>questionText}" required="{ parts: ['detailView>status'], formatter: '.formatter.questionMandatory' }" class="questionnaireRBGLabel"/>
+					<RadioButtonGroup selectedIndex="{ parts: ['detailView>yesNo'], formatter: '.formatter.yesNoSelectedIndex' }" select="questionnaireSelectionChange"
+						visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.yesNoResponseRequired' }" columns="2" class="questionnaireRBG">
 						<buttons>
 							<RadioButton text="No"/>
 							<RadioButton text="Yes"/>
 						</buttons>
 					</RadioButtonGroup>
-					<TextArea id="freeTextDetails" text="{responseText}" placeholder="Provide details"
-						visible="{ parts: [ 'responseType' ], formatter: '.formatter.responseTextVisible' }"
-						enabled="{ parts: [ 'responseType', 'yesNo' ], formatter: '.formatter.responseTextEnabled' }" 
+					<TextArea id="freeTextDetails" value="{detailView>responseText}" placeholder="Provide details"
+						visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.responseTextVisible' }"
+						enabled="{ parts: [ 'detailView>responseType', 'detailView>yesNo' ], formatter: '.formatter.responseTextEnabled' }" 
 						liveChange="updateQuestionnaireResponseText" width="100%"/>
 				</CustomListItem>
 			</List>

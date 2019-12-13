@@ -95,6 +95,8 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
+						
+						this._readQuestions();
 						this._parsePaymentMethods(data);
 						this.resetRegionFilters(data.country);
 
@@ -656,6 +658,11 @@ sap.ui.define([
 					req.paymentMethods += o.paymentMethodCode;
 				}
 			});
+			
+			// Merge Questions
+			req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function(q) {
+				return Object.assign({}, q);
+			});
 
 			var fnSuccess = function (data) {
 
@@ -962,12 +969,13 @@ sap.ui.define([
 		},
 
 		questionnaireSelectionChange: function (event) {
-			var sourcePath = event.getSource().getBindingContext().getPath(),
-				newValue = event.getParameter("selectedIndex") === 1 ? "X" : "-";
+			var sourcePath = event.getSource().getBindingContext("detailView").getPath(),
+				newValue = event.getParameter("selectedIndex") === 1 ? "X" : "-",
+				model = this.getModel("detailView");
 
-			this.getModel().setProperty(sourcePath + "/yesNo", newValue);
+			model.setProperty(sourcePath + "/yesNo", newValue);
 			if (event.getParameter("selectedIndex") !== 1) {
-				this.getModel().setProperty(sourcePath + "/responseText", "");
+				model.setProperty(sourcePath + "/responseText", "");
 			}
 			event.getSource().setValueState(ValueState.None);
 		},
@@ -998,7 +1006,7 @@ sap.ui.define([
 
 			listItems.forEach(function (l) {
 
-				var q = l.getBindingContext().getObject(),
+				var q = l.getBindingContext("detailView").getObject(),
 					rbg = l.getContent()[1],
 					txt = l.getContent()[2];
 
@@ -1030,7 +1038,22 @@ sap.ui.define([
 		},
 		
 		updateQuestionnaireResponseText: function(event) {
-			this.getModel().setProperty(event.getSource().getBindingContext().getPath() + "/responseText", event.getParameter("newValue"));	
+			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/responseText", event.getParameter("newValue"));	
+		},
+		
+		_readQuestions: function() {
+			var detailModel = this.getModel("detailView"),
+				model		= this.getModel();
+				
+			model.read(this._sObjectPath + "/ToQuestions", {
+				success: function(data) {
+					var questions = data.results.map(function(q) {
+						return Object.assign({}, q);
+					});
+					
+					detailModel.setProperty("/Questions", questions);
+				}
+			});
 		}
 	});
 });
