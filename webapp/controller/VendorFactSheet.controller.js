@@ -33,7 +33,10 @@ sap.ui.define([
 			},
 			paymentMethods: [],
 			bankDetailsLocked: false,
-			banks: []
+			banks: [],
+			attachmentRequirements: [],
+			allAttachmentRequirements: [],
+			attachmentsRequired: false
 		},
 
 		oMessageManager: {},
@@ -95,7 +98,8 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
-						
+
+						this._resetAttachmentRequirements(this._sCompanyCode);
 						this._readQuestions();
 						this._parsePaymentMethods(data);
 						this.resetRegionFilters(data.country);
@@ -158,6 +162,7 @@ sap.ui.define([
 			// Bank details are present, set the modify bank details switch to on
 			if (data.accountBankKey) {
 				oDetailModel.setProperty("/editBankDetails", true);
+				this.setCurrentAttachmentRequirements();
 			}
 
 		},
@@ -432,7 +437,8 @@ sap.ui.define([
 		},
 
 		paymentMethodChange: function (oEvent) {
-			var model = this.getModel("detailView");
+			var model = this.getModel("detailView"),
+				that = this;
 			// Ignore if we are turning a payment method off
 			if (!oEvent.getParameter("state")) {
 				return;
@@ -450,6 +456,7 @@ sap.ui.define([
 						} else {
 							model.setProperty("/editBankDetails", true);
 							model.setProperty("/bankDetailsLocked", true);
+							that.setCurrentAttachmentRequirements();
 						}
 					}
 				});
@@ -658,9 +665,9 @@ sap.ui.define([
 					req.paymentMethods += o.paymentMethodCode;
 				}
 			});
-			
+
 			// Merge Questions
-			req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function(q) {
+			req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function (q) {
 				return Object.assign({}, q);
 			});
 
@@ -855,6 +862,21 @@ sap.ui.define([
 				}));
 			}
 
+			// If there are attachment requirements, check that all have been marked as completed
+			var attachmentRequirements = this.getModel("detailView").getProperty("/attachmentRequirements"),
+				missingRequirements = attachmentRequirements.filter(function (o) {
+					return !o.complete;
+				});
+
+			if (missingRequirements.length > 0) {
+				messages.push(new Message({
+					message: "Attachment Requirements have not been met",
+					description: "Check the attachment requirements table, upload documents and mark the requirements as complete",
+					type: MessageType.Error,
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
+
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);
 			}
@@ -1033,27 +1055,82 @@ sap.ui.define([
 					result = false;
 				}
 			});
-			
+
 			return result;
 		},
-		
-		updateQuestionnaireResponseText: function(event) {
-			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/responseText", event.getParameter("newValue"));	
+
+		updateQuestionnaireResponseText: function (event) {
+			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/responseText", event.getParameter(
+				"newValue"));
 		},
-		
-		_readQuestions: function() {
+
+		_readQuestions: function () {
 			var detailModel = this.getModel("detailView"),
-				model		= this.getModel();
-				
+				model = this.getModel();
+
 			model.read(this._sObjectPath + "/ToQuestions", {
-				success: function(data) {
-					var questions = data.results.map(function(q) {
+				success: function (data) {
+					var questions = data.results.map(function (q) {
 						return Object.assign({}, q);
 					});
-					
+
 					detailModel.setProperty("/Questions", questions);
 				}
 			});
+		},
+
+		_resetAttachmentRequirements: function (sCompCode) {
+
+			var detailModel = this.getModel("detailView"),
+				model = this.getModel(),
+				that = this;
+
+			detailModel.setProperty("/allAttachmentRequirements", []);
+
+			model.read("/AttachmentRequirements", {
+				filters: [
+					new Filter({
+						path: "compCode",
+						operator: FilterOperator.EQ,
+						value1: sCompCode
+					})
+				],
+				success: function (data) {
+					var attachmentRequirements = data.results;
+					detailModel.setProperty("/allAttachmentRequirements", attachmentRequirements);
+					that.setCurrentAttachmentRequirements();
+
+				},
+				error: function (err) {
+					MessageBox.error("Error retrieving attachment requirements", {
+						title: "An error has occurred"
+					});
+				}
+			});
+		},
+
+		setCurrentAttachmentRequirements: function () {
+			var detailModel = this.getModel("detailView"),
+				allRequirements = detailModel.getProperty("/allAttachmentRequirements"),
+				existingVendor = detailModel.getProperty("/existingVendor"),
+				editBankDetails = detailModel.getProperty("/editBankDetails"),
+				attachmentRequirements = allRequirements.filter(function (o) {
+					return (!existingVendor && o.newRequest) ||
+						(editBankDetails && o.bankChange) ||
+						(existingVendor && o.otherChange);
+				})
+				.map(function (o) {
+					return Object.assign({
+						complete: false
+					}, o);
+				});
+
+			detailModel.setProperty("/attachmentRequirements", attachmentRequirements);
+			detailModel.setProperty("/attachmentsRequired", attachmentRequirements.length > 0);
+		},
+
+		editBankDetailsChange: function (event) {
+			this.setCurrentAttachmentRequirements();
 		}
 	});
 });

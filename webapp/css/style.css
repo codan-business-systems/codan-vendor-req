@@ -15,9 +15,9 @@
 	padding-top: 1rem;
 }
 
-.paymentMethodsForm {
+/*.paymentMethodsForm {
 	padding-bottom: 1.8rem;
-}
+}*/
 
 .sapMPanelContent:not(.sapMPanelBGTransparent) {
 	border-bottom: none;	
@@ -43,4 +43,8 @@
 
 .auditQuestionsDialog {
 	padding-bottom: 1em !important;
+}
+
+.attachmentRequirementsTable {
+	margin: 0 auto;	
 }

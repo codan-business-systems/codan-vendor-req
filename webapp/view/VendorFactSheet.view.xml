@@ -142,7 +142,8 @@
 					</Panel>
 				</VBox>
 			</HBox>
-			<HBox width="100%" height="auto" class="sapMPanelBGTranslucent">
+			<HBox width="100%" height="auto">
+				<!-- class="sapMPanelBGTranslucent">-->
 				<HBox width="100%" height="100%">
 					<VBox width="50%" height="100%">
 						<Panel id="paymentMethodsPanel">
@@ -203,7 +204,7 @@
 										</layoutData>
 									</Label>
 									<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}"
-										enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }"/>
+										enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }" change="editBankDetailsChange"/>
 									<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
 										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 									<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
@@ -255,6 +256,25 @@
 				</VBox>
 			</Panel>-->
 			<Panel>
+				<HBox alignContent="Center">
+					<Table id="attachmentRequirements" visible="{= ${detailView>/attachmentsRequired} &amp;&amp; ${detailView>/editMode} }" items="{detailView>/attachmentRequirements}"
+						width="80%" class="attachmentRequirementsTable" headerText="Attachments Required">
+						<columns>
+							<Column width="90%">
+								<Text text="Description"/>
+							</Column>
+							<Column>
+								<Text text="Complete"/>
+							</Column>
+						</columns>
+						<items>
+							<ColumnListItem>
+								<Text text="{detailView>description}"/>
+								<Switch state="{detailView>complete}" type="AcceptReject"/>
+							</ColumnListItem>
+						</items>
+					</Table>
+				</HBox>
 				<codan:UploadCollection width="100%" id="attachments" visible="{detailView>/editMode}" multiple="false" items="{ToAttachments}"
 					maximumFilenameLength="0" maximumFileSize="0" change="changeAttachment" fileDeleted="deleteAttachment" uploadComplete="uploadComplete"
 					noDataText="{i18n>txtNoAttachments}" uploadEnabled="true" busy="{detailView>/attachmentsBusy}" suppressUpload="{= !${id} }"
