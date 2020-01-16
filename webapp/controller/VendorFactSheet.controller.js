@@ -402,6 +402,8 @@ sap.ui.define([
 					});
 				}
 			});
+			
+			this.checkDuplicateBank();
 
 			/*this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
 				path: "filterValue",
@@ -567,6 +569,8 @@ sap.ui.define([
 				model.setProperty(this._sObjectPath + "/bankBranch", bank.branchName);
 				model.setProperty(this._sObjectPath + "/bankName", bank.bankName);
 			}
+			
+			this.checkDuplicateBank();
 
 		},
 
@@ -1189,6 +1193,41 @@ sap.ui.define([
 				},
 				error: function(err) {
 					MessageBox.error("Error checking duplicate name", {
+						title: "An error has occurred"
+					});
+				}
+			});
+		},
+		
+		checkDuplicateBank: function() {
+			var model			= this.getModel(),
+				req 			= model.getProperty(this._sObjectPath),
+				currentVendor	= this._sVendorId,
+				source			= this.getView().byId("accountNumber");
+			
+			source.setValueState(ValueState.None);
+			
+			if (!req.accountBankKey || !req.accountCountry || !req.accountNumber) {
+				return;
+			}
+			
+			model.callFunction("/DuplicateBankCheck", {
+				urlParameters: {
+					"bankKey": req.accountBankKey,
+					"bankAccount": req.accountNumber,
+					"bankCountry": req.accountCountry,
+					"currentVendor": currentVendor || ""
+				},
+				success: function(data) {
+					if (!data.id) {
+						return;
+					}
+					
+					source.setValueState(ValueState.Error);
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with these bank details"); 
+				},
+				error: function(err) {
+					MessageBox.error("Error checking duplicate bank details", {
 						title: "An error has occurred"
 					});
 				}

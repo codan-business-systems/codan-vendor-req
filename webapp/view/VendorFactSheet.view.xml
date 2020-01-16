@@ -227,7 +227,7 @@
 										visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" value="{bankSwiftCode}"/>
 									<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
 										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
+									<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }" change="checkDuplicateBank"/>
 									<Label id="accountIbanLabel" text="IBAN" labelFor="accountIban" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
 										required="true"/>
 									<Input id="accountIban" value="{accountIban}" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
