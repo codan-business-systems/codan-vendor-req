@@ -1145,7 +1145,7 @@ sap.ui.define([
 			this.getModel().callFunction("/DuplicateAbnCheck", {
 				urlParameters: {
 					"abn": abn,
-					"currentVendor": currentVendor
+					"currentVendor": currentVendor || ""
 				},
 				success: function(data) {
 					if (!data.id) {
@@ -1161,8 +1161,38 @@ sap.ui.define([
 					});
 				}
 			});
+		},
+		
+		checkDuplicateName: function(event) {
+			var name = event.getParameter("newValue"),
+				currentVendor = this._sVendorId,
+				source = event.getSource();
 			
+			if (!name) {
+				return;
+			}
 			
+			source.setValueState(ValueState.None);
+			
+			this.getModel().callFunction("/DuplicateNameCheck", {
+				urlParameters: {
+					"name": name,
+					"currentVendor": currentVendor || ""
+				},
+				success: function(data) {
+					if (!data.id) {
+						return;
+					}
+					
+					source.setValueState(ValueState.Error);
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with this name"); 
+				},
+				error: function(err) {
+					MessageBox.error("Error checking duplicate name", {
+						title: "An error has occurred"
+					});
+				}
+			});
 		}
 	});
 });

@@ -32,7 +32,7 @@
 								<Switch id="employeeSwitch" state="{= ${vendorType} === 'E'}"
 									enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/existingVendor} }" change="employeeTypeChange"/>
 								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1" required="{detailView>/editMode}"/>
-								<Input id="name1" value="{name1}" editable="{detailView>/editMode}"/>
+								<Input id="name1" value="{name1}" editable="{detailView>/editMode}" change="checkDuplicateName"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
