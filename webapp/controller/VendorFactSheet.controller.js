@@ -1131,6 +1131,38 @@ sap.ui.define([
 
 		editBankDetailsChange: function (event) {
 			this.setCurrentAttachmentRequirements();
+		},
+		
+		checkDuplicateAbn: function(event) {
+			var abn = event.getParameter("newValue"),
+				currentVendor = this._sVendorId,
+				source = event.getSource();
+			
+			if (!abn || event.getSource().getValueState() !== ValueState.Success) {
+				return;
+			}
+			
+			this.getModel().callFunction("/DuplicateAbnCheck", {
+				urlParameters: {
+					"abn": abn,
+					"currentVendor": currentVendor
+				},
+				success: function(data) {
+					if (!data.id) {
+						return;
+					}
+					
+					source.setValueState(ValueState.Error);
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with this ABN"); 
+				},
+				error: function(err) {
+					MessageBox.error("Error checking duplicate ABN", {
+						title: "An error has occurred"
+					});
+				}
+			});
+			
+			
 		}
 	});
 });

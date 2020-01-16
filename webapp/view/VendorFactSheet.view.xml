@@ -39,7 +39,8 @@
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
 								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
 									required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
-								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"/>
+								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"
+									change="checkDuplicateAbn"/>
 								<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
 								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'E'}"/>
