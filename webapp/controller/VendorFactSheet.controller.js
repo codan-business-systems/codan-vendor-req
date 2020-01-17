@@ -880,7 +880,41 @@ sap.ui.define([
 					processor: that.getOwnerComponent().getModel()
 				}));
 			}
-
+			
+			// Check Name, ABN and Bank Details are unique
+			var nameField = this.getView().byId("name1");
+			
+			if (nameField && nameField.getValueState() === ValueState.Error) {
+				messages.push(new Message({
+					message: nameField.getValueStateText(),
+					description: "Check that this vendor is not a duplicate",
+					type: MessageType.Error,
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
+			
+			var abnField = this.getView().byId("abn");
+			
+			if (abnField && abnField.getValueState() === ValueState.Error) {
+				messages.push(new Message({
+					message: abnField.getValueStateText(),
+					description: "Check that this vendor is not a duplicate",
+					type: MessageType.Error,
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
+			
+			var bankField = this.getView().byId("accountNumber");
+			
+			if (bankField && bankField.getValueState() === ValueState.Error) {
+				messages.push(new Message({
+					message: bankField.getValueStateText(),
+					description: "Check that this vendor is not a duplicate",
+					type: MessageType.Error,
+					processor: that.getOwnerComponent().getModel()
+				}));
+			}
+			
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);
 			}
