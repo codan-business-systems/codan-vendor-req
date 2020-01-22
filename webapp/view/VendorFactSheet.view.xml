@@ -39,8 +39,7 @@
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
 								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
 									required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
-								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}"
-									change="checkDuplicateAbn"/>
+								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}" change="checkDuplicateAbn"/>
 								<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
 								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'E'}"/>
@@ -143,123 +142,104 @@
 					</Panel>
 				</VBox>
 			</HBox>
-			<HBox width="100%" height="auto">
-				<!-- class="sapMPanelBGTranslucent">-->
-				<HBox width="100%" height="100%">
-					<VBox width="50%" height="100%">
-						<Panel id="paymentMethodsPanel">
-							<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorPaymentMethods" layout="ResponsiveGridLayout" backgroundDesign="Solid"
-								width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
-								labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%" class="paymentMethodsForm">
-								<f:toolbar>
-									<Toolbar>
-										<Title text="Payments"/>
-									</Toolbar>
-								</f:toolbar>
-								<f:content>
-									<Label labelFor="paymentMethodsTable" text="Payment Methods"/>
-									<Table id="paymentMethodsTable" items="{detailView>/paymentMethods}" class="sapUiSizeCompact"
-										busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
-										<!--<headerToolbar>
+			<HBox width="100%" height="auto" class="zEqualHeightFlexBox">
+				<Panel id="paymentMethodsPanel">
+					<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorPaymentMethods" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+						width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+						labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%" class="paymentMethodsForm">
+						<f:toolbar>
+							<Toolbar>
+								<Title text="Payments"/>
+							</Toolbar>
+						</f:toolbar>
+						<f:content>
+							<Label labelFor="paymentMethodsTable" text="Payment Methods"/>
+							<Table id="paymentMethodsTable" items="{detailView>/paymentMethods}" class="sapUiSizeCompact"
+								busyIndicatorDelay="{detailView>/tableBusyDelay}" fixedLayout="false" width="auto" height="100%">
+								<!--<headerToolbar>
 										<Toolbar>
 											<Title text="{i18n>txtCompanyCodes}"/>
 										</Toolbar>
 									</headerToolbar>-->
-										<columns>
-											<Column id="colCompanyCode"/>
-											<Column id="colStockProcurement"/>
-										</columns>
-										<items>
-											<ColumnListItem type="Inactive">
-												<ObjectIdentifier text="{detailView>paymentMethodText} ({detailView>paymentMethodCode})"/>
-												<Switch state="{detailView>paymentMethodActive}" enabled="{detailView>/editMode}" change="paymentMethodChange"/>
-											</ColumnListItem>
-										</items>
-									</Table>
-									<Label id="labelPaymentTerms" text="Payment Terms" labelFor="paymentTerms"/>
-									<ComboBox id="paymentTerms" selectedKey="{paymentTerms}" enabled="{detailView>/editMode}"
-										items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'paymentTerms' } }" change="checkPaymentTerms"
-										maxLength="4">
-										<core:Item text="{key} ({value})" key="{key}"/>
-									</ComboBox>
-								</f:content>
-							</f:SimpleForm>
-						</Panel>
-					</VBox>
-					<VBox width="50%" height="100%">
-						<Panel id="bankDetailsPanel">
-							<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorBankDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
-								width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
-								labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
-								<f:toolbar>
-									<Toolbar>
-										<Title text="Bank Details"/>
-										<ToolbarSpacer/>
-										<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showBankDetailsHelp"/>
-									</Toolbar>
-								</f:toolbar>
-								<f:content>
-									<Label id="editBankDetailsLabel" text="{i18n>lblChangeBankDetails}" labelFor="editBankDetailsSwitch">
-										<layoutData>
-											<l:GridData id="bankSwitchGridData" span="L4 M4 S4"/>
-										</layoutData>
-									</Label>
-									<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}"
-										enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }" change="editBankDetailsChange"/>
-									<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
-									<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<ComboBox id="bankCountry" enabled="{detailView>/editBankDetails}" selectedKey="{accountCountry}" change="onBankCountryChange"
-										items="{path: 'countries>/', sorter: { path: 'name' } }">
-										<core:Item text="{countries>name}" key="{countries>key}"/>
-									</ComboBox>
-									<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<Input id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" showSuggestion="true"
-										suggestionItems="{detailView>/banks}" change="checkAccountKey" value="{accountBankKey}">
-										<core:Item text="{detailView>bankKey} ({detailView>bankName})" key="{detailView>bankKey}"/>
-									</Input>
-									<Label id="bankSwiftKeyLabel" text="Swift Key" labelFor="bankSwiftKey"
-										visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" required="true"/>
-									<Input id="bankSwiftKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }"
-										visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" value="{bankSwiftCode}"/>
-									<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }" change="checkDuplicateBank"/>
-									<Label id="accountIbanLabel" text="IBAN" labelFor="accountIban" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
-										required="true"/>
-									<Input id="accountIban" value="{accountIban}" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
-										editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
-									<Label id="currencyLabel" text="{i18n>lblCurrency}" labelFor="currency"
-										required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-									<ComboBox id="currency" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" selectedKey="{currency}"
-										items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">
-										<core:Item text="{key} ({value})" key="{key}"/>
-									</ComboBox>
-								</f:content>
-							</f:SimpleForm>
-						</Panel>
-					</VBox>
-				</HBox>
+								<columns>
+									<Column id="colCompanyCode"/>
+									<Column id="colStockProcurement"/>
+								</columns>
+								<items>
+									<ColumnListItem type="Inactive">
+										<ObjectIdentifier text="{detailView>paymentMethodText} ({detailView>paymentMethodCode})"/>
+										<Switch state="{detailView>paymentMethodActive}" enabled="{detailView>/editMode}" change="paymentMethodChange"/>
+									</ColumnListItem>
+								</items>
+							</Table>
+							<Label id="labelPaymentTerms" text="Payment Terms" labelFor="paymentTerms"/>
+							<ComboBox id="paymentTerms" selectedKey="{paymentTerms}" enabled="{detailView>/editMode}"
+								items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'paymentTerms' } }" change="checkPaymentTerms"
+								maxLength="4">
+								<core:Item text="{key} ({value})" key="{key}"/>
+							</ComboBox>
+							<Label id="currencyLabel" text="{i18n>lblCurrency}" labelFor="currency" required="{detailView>/editMode}"/>
+							<ComboBox id="currency" enabled="{detailView>/editMode}" selectedKey="{currency}"
+								items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'currency' } }">
+								<core:Item text="{key} ({value})" key="{key}"/>
+							</ComboBox>
+						</f:content>
+					</f:SimpleForm>
+				</Panel>
+				<Panel id="bankDetailsPanel" height="100%" class="zEqualHeightPanel">
+					<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorBankDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+						width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+						labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
+						<f:toolbar>
+							<Toolbar>
+								<Title text="Bank Details"/>
+								<ToolbarSpacer/>
+								<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showBankDetailsHelp"/>
+							</Toolbar>
+						</f:toolbar>
+						<f:content>
+							<Label id="editBankDetailsLabel" text="{i18n>lblChangeBankDetails}" labelFor="editBankDetailsSwitch">
+								<layoutData>
+									<l:GridData id="bankSwitchGridData" span="L4 M4 S4"/>
+								</layoutData>
+							</Label>
+							<Switch id="editBankDetailsSwitch" state="{detailView>/editBankDetails}"
+								enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }" change="editBankDetailsChange"/>
+							<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
+								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+							<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
+							<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry"
+								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+							<ComboBox id="bankCountry" enabled="{detailView>/editBankDetails}" selectedKey="{accountCountry}" change="onBankCountryChange"
+								items="{path: 'countries>/', sorter: { path: 'name' } }">
+								<core:Item text="{countries>name}" key="{countries>key}"/>
+							</ComboBox>
+							<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
+								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+							<Input id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" showSuggestion="true"
+								suggestionItems="{detailView>/banks}" change="checkAccountKey" value="{accountBankKey}">
+								<core:Item text="{detailView>bankKey} ({detailView>bankName})" key="{detailView>bankKey}"/>
+							</Input>
+							<Label id="bankSwiftKeyLabel" text="Swift Key" labelFor="bankSwiftKey"
+								visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" required="true"/>
+							<Input id="bankSwiftKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }"
+								visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" value="{bankSwiftCode}"/>
+							<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
+								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
+							<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"
+								change="checkDuplicateBank"/>
+							<Label id="accountIbanLabel" text="IBAN" labelFor="accountIban" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
+								required="true"/>
+							<Input id="accountIban" value="{accountIban}" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
+								editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
+						</f:content>
+					</f:SimpleForm>
+				</Panel>
 			</HBox>
-			<!--<Panel>
-				<VBox>
-					<HBox>
-						<Switch id="stockVendorSwitch" value="{stock}" enabled="{detailView>/editMode}"/>
-						<Title class="procurementTypeTitle" text="We purchase materials/inventory from this vendor"/>
-					</HBox>
-					<HBox>
-						<Switch id="servicesVendorSwitch" value="{services}" enabled="{detailView>/editMode}"/>
-						<Title class="procurementTypeTitle" text="We purchase services from this vendor"/>
-					</HBox>
-				</VBox>
-			</Panel>-->
 			<Panel>
 				<HBox alignContent="Center">
-					<Table id="attachmentRequirements" visible="{= ${detailView>/attachmentsRequired} &amp;&amp; ${detailView>/editMode} }" items="{detailView>/attachmentRequirements}"
-						width="80%" class="attachmentRequirementsTable" headerText="Attachments Required">
+					<Table id="attachmentRequirements" visible="{= ${detailView>/attachmentsRequired} &amp;&amp; ${detailView>/editMode} }"
+						items="{detailView>/attachmentRequirements}" width="80%" class="attachmentRequirementsTable" headerText="Attachments Required">
 						<columns>
 							<Column width="90%">
 								<Text text="Description"/>

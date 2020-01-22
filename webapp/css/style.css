@@ -48,3 +48,14 @@
 .attachmentRequirementsTable {
 	margin: 0 auto;	
 }
+
+.zEqualHeightFlexBox {
+	display: flex;	
+}
+
+.zEqualHeightFlexBox>.sapMFlexItem {
+	flex: 1;
+}
+.zEqualHeightPanel>.sapMPanelContent {
+	height: 100%;
+}
