@@ -27,6 +27,10 @@ sap.ui.define([
 			// Retrieve a reference to the upload button
 			this.uploadButton = this._getFileUploader().oBrowse;
 			
+			if (this.fakeUploadButton) {
+				return;
+			}
+			
 			this.fakeUploadButton = new Button({
 				icon: "sap-icon://add",
 				type: "Transparent"
