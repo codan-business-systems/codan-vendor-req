@@ -40,7 +40,7 @@ sap.ui.define([
 
 			/* Instantiate the resource bundle for the controls */
 			this._oBundle = jQuery.sap.resources({
-				url: "control/i18n/i18n.properties",
+				url: jQuery.sap.getModulePath("req/vendor/codan/control/AbnInput.js").replace("/AbnInput/js","/i18n/i18n.properties"),
 				locale: sap.ui.getCore().getConfiguration().getLanguage()
 			});
 
