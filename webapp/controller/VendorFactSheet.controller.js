@@ -441,8 +441,19 @@ sap.ui.define([
 		paymentMethodChange: function (oEvent) {
 			var model = this.getModel("detailView"),
 				that = this;
-			// Ignore if we are turning a payment method off
+
+			// If we are turning a payment method off, check that there is at least one payment method active
+			// that requires bank details
 			if (!oEvent.getParameter("state")) {
+				if (model.getProperty("/bankDetailsLocked")) {
+					var aPaymentMethods = model.getProperty("/paymentMethods").filter(function (o) {
+						return o.bankDetailsReqdFlag && o.paymentMethodActive;
+					});
+
+					if (aPaymentMethods.length < 1) {
+						model.setProperty("/bankDetailsLocked", false);
+					}
+				}
 				return;
 			}
 
