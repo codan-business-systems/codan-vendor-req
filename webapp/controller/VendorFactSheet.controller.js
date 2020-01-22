@@ -402,7 +402,7 @@ sap.ui.define([
 					});
 				}
 			});
-			
+
 			this.checkDuplicateBank();
 
 			/*this.byId("bankKey").getBinding("suggestionItems").filter(new Filter({
@@ -569,7 +569,7 @@ sap.ui.define([
 				model.setProperty(this._sObjectPath + "/bankBranch", bank.branchName);
 				model.setProperty(this._sObjectPath + "/bankName", bank.bankName);
 			}
-			
+
 			this.checkDuplicateBank();
 
 		},
@@ -761,6 +761,16 @@ sap.ui.define([
 				shortText: "Search Term",
 				description: "Enter a search term",
 				notForEmployees: false
+			}, {
+				name: "street",
+				shortText: "Street",
+				description: "Enter a street address",
+				notForEmployees: false
+			}, {
+				name: "currency",
+				shortText: "Currency",
+				description: "Enter a currency for payments",
+				notForEmployees: false
 			}];
 
 			// Check all mandatory fields
@@ -818,27 +828,38 @@ sap.ui.define([
 				return oPaymentMethod.paymentMethodActive;
 			});
 
-			paymentMethods.forEach(function (oPaymentMethod) {
-				if (oPaymentMethod.bankDetailsReqdFlag && (!req.hasBankDetails && (!req.accountBankKey || !req.accountNumber))) {
-					messages.push(new Message({
-						message: "Bank Account is mandatory for payment method" + oPaymentMethod.paymentMethodText,
-						description: "Enter Bank Account details",
-						type: MessageType.Error,
-						target: that._sObjectPath + "/accountBankKey",
-						processor: that.getOwnerComponent().getModel()
-					}));
-				}
+			if (paymentMethods.length < 1) {
+				messages.push(new Message({
+					message: "Missing Payment method",
+					description: "Select at least one payment method",
+					type: MessageType.Error,
+					target: that._sObjectPath + "/paymentMethods",
+					processor: that.getOwnerComponent().getModel()
+				}));
+			} else {
 
-				if (oPaymentMethod.addressReqdFlag && !req.street && !req.poBox) {
-					messages.push(new Message({
-						message: "Address is mandatory for payment method" + oPaymentMethod.paymentMethodText,
-						description: "Enter Address details",
-						type: MessageType.Error,
-						target: that._sObjectPath + "/street",
-						processor: that.getOwnerComponent().getModel()
-					}));
-				}
-			});
+				paymentMethods.forEach(function (oPaymentMethod) {
+					if (oPaymentMethod.bankDetailsReqdFlag && (!req.hasBankDetails && (!req.accountBankKey || !req.accountNumber))) {
+						messages.push(new Message({
+							message: "Bank Account is mandatory for payment method" + oPaymentMethod.paymentMethodText,
+							description: "Enter Bank Account details",
+							type: MessageType.Error,
+							target: that._sObjectPath + "/accountBankKey",
+							processor: that.getOwnerComponent().getModel()
+						}));
+					}
+
+					if (oPaymentMethod.addressReqdFlag && !req.street && !req.poBox) {
+						messages.push(new Message({
+							message: "Address is mandatory for payment method" + oPaymentMethod.paymentMethodText,
+							description: "Enter Address details",
+							type: MessageType.Error,
+							target: that._sObjectPath + "/street",
+							processor: that.getOwnerComponent().getModel()
+						}));
+					}
+				});
+			}
 
 			// Payment method E is only valid for Australia
 			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
@@ -880,10 +901,10 @@ sap.ui.define([
 					processor: that.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check Name, ABN and Bank Details are unique
 			var nameField = this.getView().byId("name1");
-			
+
 			if (nameField && nameField.getValueState() === ValueState.Error) {
 				messages.push(new Message({
 					message: nameField.getValueStateText(),
@@ -892,9 +913,9 @@ sap.ui.define([
 					processor: that.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			var abnField = this.getView().byId("abn");
-			
+
 			if (abnField && abnField.getValueState() === ValueState.Error) {
 				messages.push(new Message({
 					message: abnField.getValueStateText(),
@@ -903,9 +924,9 @@ sap.ui.define([
 					processor: that.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			var bankField = this.getView().byId("accountNumber");
-			
+
 			if (bankField && bankField.getValueState() === ValueState.Error) {
 				messages.push(new Message({
 					message: bankField.getValueStateText(),
@@ -914,7 +935,7 @@ sap.ui.define([
 					processor: that.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);
 			}
@@ -1170,81 +1191,81 @@ sap.ui.define([
 		editBankDetailsChange: function (event) {
 			this.setCurrentAttachmentRequirements();
 		},
-		
-		checkDuplicateAbn: function(event) {
+
+		checkDuplicateAbn: function (event) {
 			var abn = event.getParameter("newValue"),
 				currentVendor = this._sVendorId,
 				source = event.getSource();
-			
+
 			if (!abn || event.getSource().getValueState() !== ValueState.Success) {
 				return;
 			}
-			
+
 			this.getModel().callFunction("/DuplicateAbnCheck", {
 				urlParameters: {
 					"abn": abn,
 					"currentVendor": currentVendor || ""
 				},
-				success: function(data) {
+				success: function (data) {
 					if (!data.id) {
 						return;
 					}
-					
+
 					source.setValueState(ValueState.Error);
-					source.setValueStateText("A Vendor (" + data.id + ") already exists with this ABN"); 
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with this ABN");
 				},
-				error: function(err) {
+				error: function (err) {
 					MessageBox.error("Error checking duplicate ABN", {
 						title: "An error has occurred"
 					});
 				}
 			});
 		},
-		
-		checkDuplicateName: function(event) {
+
+		checkDuplicateName: function (event) {
 			var name = event.getParameter("newValue"),
 				currentVendor = this._sVendorId,
 				source = event.getSource();
-			
+
 			if (!name) {
 				return;
 			}
-			
+
 			source.setValueState(ValueState.None);
-			
+
 			this.getModel().callFunction("/DuplicateNameCheck", {
 				urlParameters: {
 					"name": name,
 					"currentVendor": currentVendor || ""
 				},
-				success: function(data) {
+				success: function (data) {
 					if (!data.id) {
 						return;
 					}
-					
+
 					source.setValueState(ValueState.Error);
-					source.setValueStateText("A Vendor (" + data.id + ") already exists with this name"); 
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with this name");
 				},
-				error: function(err) {
+				error: function (err) {
 					MessageBox.error("Error checking duplicate name", {
 						title: "An error has occurred"
 					});
 				}
 			});
 		},
-		
-		checkDuplicateBank: function() {
-			var model			= this.getModel(),
-				req 			= model.getProperty(this._sObjectPath),
-				currentVendor	= this._sVendorId,
-				source			= this.getView().byId("accountNumber");
-			
+
+		checkDuplicateBank: function () {
+			var model = this.getModel(),
+				req = model.getProperty(this._sObjectPath),
+				currentVendor = this._sVendorId,
+				source = this.getView().byId("accountNumber");
+
 			source.setValueState(ValueState.None);
-			
+
 			if (!req.accountBankKey || !req.accountCountry || !req.accountNumber) {
 				return;
 			}
-			
+
 			model.callFunction("/DuplicateBankCheck", {
 				urlParameters: {
 					"bankKey": req.accountBankKey,
@@ -1252,15 +1273,15 @@ sap.ui.define([
 					"bankCountry": req.accountCountry,
 					"currentVendor": currentVendor || ""
 				},
-				success: function(data) {
+				success: function (data) {
 					if (!data.id) {
 						return;
 					}
-					
+
 					source.setValueState(ValueState.Error);
-					source.setValueStateText("A Vendor (" + data.id + ") already exists with these bank details"); 
+					source.setValueStateText("A Vendor (" + data.id + ") already exists with these bank details");
 				},
-				error: function(err) {
+				error: function (err) {
 					MessageBox.error("Error checking duplicate bank details", {
 						title: "An error has occurred"
 					});
