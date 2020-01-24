@@ -185,7 +185,7 @@ sap.ui.define([
 			this._initialisePaymentMethods().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
-				this.getView().setBindingContext(this._oBindingContext);
+				this._bindView(this._sObjectPath);
 
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
 			}.bind(this));
