@@ -174,9 +174,9 @@
 							</Table>
 							<Label id="labelPaymentTerms" text="Payment Terms" labelFor="paymentTerms"/>
 							<ComboBox id="paymentTerms" selectedKey="{paymentTerms}" enabled="{detailView>/editMode}"
-								items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'paymentTerms' } }" change="checkPaymentTerms"
+								items="{detailView>/paymentTerms}" change="checkPaymentTerms"
 								maxLength="4">
-								<core:Item text="{key} ({value})" key="{key}"/>
+								<core:Item text="{detailView>paymentTermsKey} ({detailView>paymentTermsText})" key="{detailView>paymentTermsKey}"/>
 							</ComboBox>
 							<Label id="currencyLabel" text="{i18n>lblCurrency}" labelFor="currency" required="{detailView>/editMode}"/>
 							<ComboBox id="currency" enabled="{detailView>/editMode}" selectedKey="{currency}"

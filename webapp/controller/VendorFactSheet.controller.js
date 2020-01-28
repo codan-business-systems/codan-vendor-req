@@ -32,6 +32,8 @@ sap.ui.define([
 				bankVerifiedTelMsg: ""
 			},
 			paymentMethods: [],
+			paymentTerms: [],
+			allPaymentTerms: [],
 			bankDetailsLocked: false,
 			banks: [],
 			attachmentRequirements: [],
@@ -91,7 +93,7 @@ sap.ui.define([
 			// The create should populate the vendor details
 			// A request ID will only be assigned when the edit is made and a save is done
 			this._setBusy(true);
-			this._initialisePaymentMethods().then(function () {
+			this._initialisePaymentMethodsAndTerms().then(function () {
 				this.getModel().create("/Requests", {
 					vendorId: this._sVendorId,
 					companyCode: this._sCompanyCode
@@ -102,7 +104,8 @@ sap.ui.define([
 						this._resetAttachmentRequirements(this._sCompanyCode);
 						this._readQuestions();
 						this._parsePaymentMethods(data);
-						this.resetRegionFilters(data.country);
+						this._resetRegionFilters(data.country);
+						this._checkCurrentPaymentMethod(data.paymentTermsKey);
 
 						this._bindView(this._sObjectPath);
 						this._setBusy(false);
@@ -118,10 +121,10 @@ sap.ui.define([
 		},
 
 		countryChange: function (oEvent) {
-			this.resetRegionFilters(oEvent.getSource().getSelectedKey());
+			this._resetRegionFilters(oEvent.getSource().getSelectedKey());
 		},
 
-		resetRegionFilters: function (sCountry) {
+		_resetRegionFilters: function (sCountry) {
 			this.setRegionFilter(this.getView().byId("region"), sCountry);
 			this.setRegionFilter(this.getView().byId("poBoxRegion"), sCountry);
 		},
@@ -140,7 +143,7 @@ sap.ui.define([
 			this.getModel("detailView").setProperty("/editBankDetails", false);
 			this.getModel("detailView").setProperty("/editMode", true);
 
-			this._initialisePaymentMethods().then(function () {
+			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
 					id: this._sRequestId
 				});
@@ -181,8 +184,10 @@ sap.ui.define([
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", false);
 			detailModel.setProperty("/editMode", true);
+			
+			this._readQuestions();
 
-			this._initialisePaymentMethods().then(function () {
+			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
 				this._bindView(this._sObjectPath);
@@ -587,25 +592,24 @@ sap.ui.define([
 
 		checkPaymentTerms: function (oEvent) {
 
-			var model = this.getModel(),
+			var detailModel = this.getModel("detailView"),
+				model		= this.getModel(),
 				paymentTermsKey = oEvent.getParameter("newValue").substring(0, 4),
-				valueHelpKey = model.createKey("/ValueHelpResults", {
-					property: "PAYMENTTERMS",
-					key: paymentTermsKey
-				}),
-				valueHelpObj = model.getProperty(valueHelpKey);
+				valueHelpObj = detailModel.getProperty("/paymentTerms").find(function(o) {
+					return o.paymentTermsKey === paymentTermsKey;
+				});
 
 			oEvent.getSource().setValueState(ValueState.None);
+			
+			model.setProperty(this._sObjectPath + "/paymentTerms", paymentTermsKey);
 
 			if (paymentTermsKey) {
-
-				model.setProperty("/paymentTerms", paymentTermsKey);
-				if (valueHelpObj) {
-					model.setProperty("/paymentTermsText", valueHelpObj.value);
+				if (valueHelpObj && valueHelpObj.selectable) {
+					model.setProperty(this._sObjectPath + "/paymentTermsText", valueHelpObj.paymentTermsText);
 				} else {
 					oEvent.getSource().setValueState(ValueState.Error);
 					oEvent.getSource().setValueStateText("Payment terms are invalid");
-					model.setProperty("/paymentTermsText", "");
+					model.setProperty(this._sObjectPath + "/paymentTermsText", "");
 				}
 
 			}
@@ -875,7 +879,7 @@ sap.ui.define([
 			// Payment method E is only valid for Australia
 			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
 					return p.paymentMethodCode === "E";
-				}) && !req.accountCountry && req.accountCountry !== "AU") {
+				}) && req.accountCountry && req.accountCountry !== "AU") {
 				messages.push(new Message({
 					message: "Payment method E is only valid for AU Bank accounts",
 					description: "Choose payment method F",
@@ -888,7 +892,7 @@ sap.ui.define([
 			// Payment method F is only valid for outside Australia
 			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
 					return p.paymentMethodCode === "F";
-				}) && !req.accountCountry && req.accountCountry === "AU") {
+				}) && req.accountCountry && req.accountCountry === "AU") {
 				messages.push(new Message({
 					message: "Payment method F is only valid for non-AU Bank accounts",
 					description: "Choose payment method E",
@@ -972,16 +976,24 @@ sap.ui.define([
 			}
 		},
 
-		_initialisePaymentMethods: function () {
-			var that = this;
-			return new Promise(function (resolve, reject) {
-				that.getOwnerComponent().getModel().metadataLoaded().then(function () {
-					if (that.getModel("detailView").getProperty("/paymentMethods").length > 0) {
+		_initialisePaymentMethodsAndTerms: function () {
+			var that = this,
+				model = this.getOwnerComponent().getModel(),
+				detailModel = this.getModel("detailView");
+				
+			return Promise.all([
+				new Promise(function (resolve, reject) {
+				model.metadataLoaded().then(function () {
+					var paymentMethods = detailModel.getProperty("/paymentMethods");
+					if (paymentMethods.length > 0) {
+						paymentMethods.forEach(function(o) {
+							o.paymentMethodActive = false;
+						});
 						resolve();
 						return;
 					}
 
-					that.getOwnerComponent().getModel().read("/PaymentMethods", {
+					model.read("/PaymentMethods", {
 						filters: [
 							new Filter({
 								path: "companyCode",
@@ -999,13 +1011,47 @@ sap.ui.define([
 									paymentMethodActive: false
 								};
 							});
-							that.getModel("detailView").setProperty("/paymentMethods", aPaymentMethods);
+							detailModel.setProperty("/paymentMethods", aPaymentMethods);
 							resolve();
 						},
 						error: reject
 					});
 				});
-			});
+			})
+			, 
+			new Promise(function(resolve, reject) {
+				model.metadataLoaded().then(function () {
+					var paymentTerms = detailModel.getProperty("/allPaymentTerms"),
+					
+						mapPaymentTerms = function() {
+							detailModel.setProperty("/paymentTerms", paymentTerms.filter(function(p) {
+								return p.selectable;
+							}));
+						};
+					
+					if (paymentTerms.length > 0) {
+						mapPaymentTerms();
+						return;
+					}
+					
+					model.read("/PaymentTerms", {
+						success: function (data) {
+							paymentTerms = data.results.map(function (o) {
+								return {
+									paymentTermsKey: o.paymentTermsKey,
+									paymentTermsText: o.paymentTermsText,
+									selectable: o.selectable
+								};
+							});
+							detailModel.setProperty("/allPaymentTerms", paymentTerms);
+							mapPaymentTerms();
+							resolve();
+						},
+						error: reject
+					});
+				});
+			})
+			]);
 		},
 
 		_openQuestionnaireDialog: function () {
@@ -1298,6 +1344,24 @@ sap.ui.define([
 					});
 				}
 			});
+		},
+		
+		_checkCurrentPaymentMethod: function(sKey) {
+			if (!sKey) {
+				return;
+			}
+			
+			var detailModel = this.getModel("detailView"),
+				allPaymentMethods = detailModel.getProperty("/allPaymentMethods"),
+				currentPaymentMethods = detailModel.getProperty("/paymentMethods"),
+				paymentMethod = allPaymentMethods.find(function(p) {
+					return p.paymentTermsKey === sKey && !p.selectable;
+				});
+				
+				if (paymentMethod) {
+					currentPaymentMethods.push(paymentMethod);
+					detailModel.setProperty("/paymentMethods", currentPaymentMethods);
+				}
 		}
 	});
 });
