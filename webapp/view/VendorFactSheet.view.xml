@@ -95,20 +95,20 @@
 									change="countryChange">
 									<core:Item text="{countries>name}" key="{countries>key}"/>
 								</ComboBox>
-								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street" required="{detailView>/editMode}"/>
+								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street"/>
 								<Input id="houseNum1" maxLength="10" width="6rem" value="{houseNo}" editable="{detailView>/editMode}">
 									<layoutData>
 										<l:GridData id="houseNumGridData" span="L2 M2 S2"/>
 									</layoutData>
 								</Input>
 								<Input id="street" maxLength="30" value="{street}" editable="{detailView>/editMode}"/>
-								<Label id="cityLabel" text="{i18n>lblCity}" labelFor="city" required="{detailView>/editMode}"/>
+								<Label id="cityLabel" text="{i18n>lblCity}" labelFor="city"/>
 								<Input id="city" value="{city}" editable="{detailView>/editMode}"/>
 								<Label id="regionLabel" text="{i18n>lblRegion}" labelFor="region"/>
 								<Select id="region" enabled="{detailView>/editMode}" selectedKey="{region}" items="{path: 'regions>/', sorter: { path: 'name' }}">
 									<core:Item text="{regions>name}" key="{regions>key}"/>
 								</Select>
-								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode" required="{detailView>/editMode}"/>
+								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode"READ/>
 								<Input id="postcode" value="{postcode}" editable="{detailView>/editMode}"/>
 							</f:content>
 						</f:SimpleForm>
