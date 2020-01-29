@@ -100,9 +100,9 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
-
-						this._resetAttachmentRequirements(this._sCompanyCode);
+						
 						this._readQuestions();
+						this._resetAttachmentRequirements(this._sCompanyCode);
 						this._parsePaymentMethods(data);
 						this._resetRegionFilters(data.country);
 						this._checkCurrentPaymentMethod(data.paymentTermsKey);
@@ -147,6 +147,8 @@ sap.ui.define([
 				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
 					id: this._sRequestId
 				});
+				
+				this._readQuestions();
 				this._bindView(this._sObjectPath);
 			}.bind(this));
 
@@ -184,12 +186,12 @@ sap.ui.define([
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", false);
 			detailModel.setProperty("/editMode", true);
-			
-			this._readQuestions();
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
+				this._readQuestions();
+				
 				this._bindView(this._sObjectPath);
 
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
@@ -593,14 +595,14 @@ sap.ui.define([
 		checkPaymentTerms: function (oEvent) {
 
 			var detailModel = this.getModel("detailView"),
-				model		= this.getModel(),
+				model = this.getModel(),
 				paymentTermsKey = oEvent.getParameter("newValue").substring(0, 4),
-				valueHelpObj = detailModel.getProperty("/paymentTerms").find(function(o) {
+				valueHelpObj = detailModel.getProperty("/paymentTerms").find(function (o) {
 					return o.paymentTermsKey === paymentTermsKey;
 				});
 
 			oEvent.getSource().setValueState(ValueState.None);
-			
+
 			model.setProperty(this._sObjectPath + "/paymentTerms", paymentTermsKey);
 
 			if (paymentTermsKey) {
@@ -980,77 +982,80 @@ sap.ui.define([
 			var that = this,
 				model = this.getOwnerComponent().getModel(),
 				detailModel = this.getModel("detailView");
-				
-			return Promise.all([
-				new Promise(function (resolve, reject) {
-				model.metadataLoaded().then(function () {
-					var paymentMethods = detailModel.getProperty("/paymentMethods");
-					if (paymentMethods.length > 0) {
-						paymentMethods.forEach(function(o) {
-							o.paymentMethodActive = false;
-						});
-						resolve();
-						return;
-					}
 
-					model.read("/PaymentMethods", {
-						filters: [
-							new Filter({
-								path: "companyCode",
-								operator: "EQ",
-								value1: that._sCompanyCode
-							})
-						],
-						success: function (data) {
-							var aPaymentMethods = data.results.map(function (o) {
-								return {
-									paymentMethodCode: o.paymentMethodCode,
-									paymentMethodText: o.paymentMethodText,
-									bankDetailsReqdFlag: o.bankDetailsReqdFlag,
-									addressReqdFlag: o.addressReqdFlag,
-									paymentMethodActive: false
-								};
+			return Promise.all([
+				/* Read Payment Methods */
+				new Promise(function (resolve, reject) {
+					model.metadataLoaded().then(function () {
+						var paymentMethods = detailModel.getProperty("/paymentMethods");
+						if (paymentMethods.length > 0) {
+							paymentMethods.forEach(function (o) {
+								o.paymentMethodActive = false;
 							});
-							detailModel.setProperty("/paymentMethods", aPaymentMethods);
 							resolve();
-						},
-						error: reject
+							return;
+						}
+
+						model.read("/PaymentMethods", {
+							filters: [
+								new Filter({
+									path: "companyCode",
+									operator: "EQ",
+									value1: that._sCompanyCode
+								})
+							],
+							success: function (data) {
+								var aPaymentMethods = data.results.map(function (o) {
+									return {
+										paymentMethodCode: o.paymentMethodCode,
+										paymentMethodText: o.paymentMethodText,
+										bankDetailsReqdFlag: o.bankDetailsReqdFlag,
+										addressReqdFlag: o.addressReqdFlag,
+										paymentMethodActive: false
+									};
+								});
+								detailModel.setProperty("/paymentMethods", aPaymentMethods);
+								resolve();
+							},
+							error: reject
+						});
 					});
-				});
-			})
-			, 
-			new Promise(function(resolve, reject) {
-				model.metadataLoaded().then(function () {
-					var paymentTerms = detailModel.getProperty("/allPaymentTerms"),
-					
-						mapPaymentTerms = function() {
-							detailModel.setProperty("/paymentTerms", paymentTerms.filter(function(p) {
-								return p.selectable;
-							}));
-						};
-					
-					if (paymentTerms.length > 0) {
-						mapPaymentTerms();
-						return;
-					}
-					
-					model.read("/PaymentTerms", {
-						success: function (data) {
-							paymentTerms = data.results.map(function (o) {
-								return {
-									paymentTermsKey: o.paymentTermsKey,
-									paymentTermsText: o.paymentTermsText,
-									selectable: o.selectable
-								};
-							});
-							detailModel.setProperty("/allPaymentTerms", paymentTerms);
+				}),
+				/* Read Payment Terms */
+				new Promise(function (resolve, reject) {
+					model.metadataLoaded().then(function () {
+						var paymentTerms = detailModel.getProperty("/allPaymentTerms"),
+
+							mapPaymentTerms = function () {
+								detailModel.setProperty("/paymentTerms", paymentTerms.filter(function (p) {
+									return p.selectable;
+								}));
+							};
+
+						if (paymentTerms.length > 0) {
 							mapPaymentTerms();
 							resolve();
-						},
-						error: reject
+							return;
+						}
+
+						model.read("/PaymentTerms", {
+							success: function (data) {
+								paymentTerms = data.results.map(function (o) {
+									return {
+										paymentTermsKey: o.paymentTermsKey,
+										paymentTermsText: o.paymentTermsText,
+										selectable: o.selectable
+									};
+								});
+								detailModel.setProperty("/allPaymentTerms", paymentTerms);
+								mapPaymentTerms();
+								resolve();
+							},
+							error: reject
+						});
 					});
-				});
-			})
+				})
+
 			]);
 		},
 
@@ -1179,7 +1184,7 @@ sap.ui.define([
 			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/responseText", event.getParameter(
 				"newValue"));
 		},
-
+		
 		_readQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				model = this.getModel();
@@ -1345,23 +1350,23 @@ sap.ui.define([
 				}
 			});
 		},
-		
-		_checkCurrentPaymentMethod: function(sKey) {
+
+		_checkCurrentPaymentMethod: function (sKey) {
 			if (!sKey) {
 				return;
 			}
-			
+
 			var detailModel = this.getModel("detailView"),
 				allPaymentMethods = detailModel.getProperty("/allPaymentMethods"),
 				currentPaymentMethods = detailModel.getProperty("/paymentMethods"),
-				paymentMethod = allPaymentMethods.find(function(p) {
+				paymentMethod = allPaymentMethods.find(function (p) {
 					return p.paymentTermsKey === sKey && !p.selectable;
 				});
-				
-				if (paymentMethod) {
-					currentPaymentMethods.push(paymentMethod);
-					detailModel.setProperty("/paymentMethods", currentPaymentMethods);
-				}
+
+			if (paymentMethod) {
+				currentPaymentMethods.push(paymentMethod);
+				detailModel.setProperty("/paymentMethods", currentPaymentMethods);
+			}
 		}
 	});
 });
