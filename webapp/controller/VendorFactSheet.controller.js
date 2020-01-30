@@ -596,7 +596,7 @@ sap.ui.define([
 
 			var detailModel = this.getModel("detailView"),
 				model = this.getModel(),
-				paymentTermsKey = oEvent.getParameter("newValue").substring(0, 4),
+				paymentTermsKey = oEvent.getParameter("newValue") && oEvent.getParameter("newValue").split(" ")[0],
 				valueHelpObj = detailModel.getProperty("/paymentTerms").find(function (o) {
 					return o.paymentTermsKey === paymentTermsKey;
 				});
