@@ -108,7 +108,7 @@
 								<Select id="region" enabled="{detailView>/editMode}" selectedKey="{region}" items="{path: 'regions>/', sorter: { path: 'name' }}">
 									<core:Item text="{regions>name}" key="{regions>key}"/>
 								</Select>
-								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode"READ/>
+								<Label id="lblPostcode" text="{i18n>lblPostcode}" labelFor="postcode"/>
 								<Input id="postcode" value="{postcode}" editable="{detailView>/editMode}"/>
 							</f:content>
 						</f:SimpleForm>
