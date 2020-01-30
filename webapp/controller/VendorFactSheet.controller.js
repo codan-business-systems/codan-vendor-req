@@ -38,7 +38,8 @@ sap.ui.define([
 			banks: [],
 			attachmentRequirements: [],
 			allAttachmentRequirements: [],
-			attachmentsRequired: false
+			attachmentsRequired: false,
+			changeRequestMode: false
 		},
 
 		oMessageManager: {},
@@ -88,6 +89,7 @@ sap.ui.define([
 
 			this.getModel("detailView").setProperty("/existingVendor", !!this._sVendorId);
 			this.getModel("detailView").setProperty("/editBankDetails", !this._sVendorId);
+			this.getModel("detailView").setProperty("/changeRequestMode", false);
 
 			// Create a new request but only populate it with the Vendor Details.
 			// The create should populate the vendor details
@@ -100,7 +102,7 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
-						
+
 						this._readQuestions();
 						this._resetAttachmentRequirements(this._sCompanyCode);
 						this._parsePaymentMethods(data);
@@ -142,12 +144,13 @@ sap.ui.define([
 			this.getModel("detailView").setProperty("/existingVendor", true);
 			this.getModel("detailView").setProperty("/editBankDetails", false);
 			this.getModel("detailView").setProperty("/editMode", true);
+			this.getModel("detailView").setProperty("/changeRequestMode", true);
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
 					id: this._sRequestId
 				});
-				
+
 				this._readQuestions();
 				this._bindView(this._sObjectPath);
 			}.bind(this));
@@ -186,12 +189,13 @@ sap.ui.define([
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", false);
 			detailModel.setProperty("/editMode", true);
+			detailModel.setProperty("/changeRequestMode", false);
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
 				this._readQuestions();
-				
+
 				this._bindView(this._sObjectPath);
 
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
@@ -664,6 +668,7 @@ sap.ui.define([
 		_saveReq: function (bSubmit, fOnSuccess) {
 
 			var model = this.getModel(),
+				detailModel = this.getModel("detailView"),
 				req = model.getProperty(this._sObjectPath),
 				id = req.id,
 				bUpdateId = !id;
@@ -681,16 +686,18 @@ sap.ui.define([
 
 			// Merge payment methods from the detail model
 			req.paymentMethods = "";
-			this.getModel("detailView").getProperty("/paymentMethods").forEach(function (o) {
+			detailModel.getProperty("/paymentMethods").forEach(function (o) {
 				if (o.paymentMethodActive) {
 					req.paymentMethods += o.paymentMethodCode;
 				}
 			});
 
 			// Merge Questions
-			req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function (q) {
-				return Object.assign({}, q);
-			});
+			if (!detailModel.getProperty("/changeRequestMode")) {
+				req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function (q) {
+					return Object.assign({}, q);
+				});
+			}
 
 			var fnSuccess = function (data) {
 
@@ -727,7 +734,9 @@ sap.ui.define([
 				model.create("/Requests", req, {
 					success: fnSuccess,
 					error: function (error) {
-						// TODO: Error handling
+					MessageBox.error("Error saving request", {
+						title: "An error has occurred"
+					});
 					}
 				});
 			} else {
@@ -735,7 +744,9 @@ sap.ui.define([
 				model.update(this._sObjectPath, req, {
 					success: fnSuccess,
 					error: function (error) {
-						// TODO: Error handling
+					MessageBox.error("Error updating request", {
+						title: "An error has occurred"
+					});
 					}
 				});
 			}
@@ -1184,7 +1195,7 @@ sap.ui.define([
 			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/responseText", event.getParameter(
 				"newValue"));
 		},
-		
+
 		_readQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				model = this.getModel();
