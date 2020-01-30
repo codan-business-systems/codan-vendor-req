@@ -693,10 +693,34 @@ sap.ui.define([
 			});
 
 			// Merge Questions
-			if (!detailModel.getProperty("/changeRequestMode")) {
-				req.ToQuestions = this.getModel("detailView").getProperty("/Questions").map(function (q) {
+			if (!id) {
+				req.ToQuestions = detailModel.getProperty("/Questions").map(function (q) {
+
 					return Object.assign({}, q);
 				});
+			} else if (!detailModel.getProperty("/changeRequestMode")) {
+				
+				detailModel.getProperty("/Questions").forEach(function (q) {
+					var questionKey = model.createKey("/Questions", {
+						requestId: id,
+						questionId: q.questionId
+					});
+					
+					var question = {
+						requestId: id,
+						questionId: q.questionId,
+						yesNo: q.yesNo,
+						responseText: q.responseText,
+						questionText: q.questionText,
+						responseType: q.responseType,
+						role: q.role,
+						status: q.status
+					};
+
+					model.update(questionKey, question);
+
+				});
+
 			}
 
 			var fnSuccess = function (data) {
@@ -734,19 +758,22 @@ sap.ui.define([
 				model.create("/Requests", req, {
 					success: fnSuccess,
 					error: function (error) {
-					MessageBox.error("Error saving request", {
-						title: "An error has occurred"
-					});
+						MessageBox.error("Error saving request", {
+							title: "An error has occurred"
+						});
 					}
 				});
 			} else {
+				
+				delete req.ToApprovals;
+				delete req.ToQuestions;
 
 				model.update(this._sObjectPath, req, {
 					success: fnSuccess,
 					error: function (error) {
-					MessageBox.error("Error updating request", {
-						title: "An error has occurred"
-					});
+						MessageBox.error("Error updating request", {
+							title: "An error has occurred"
+						});
 					}
 				});
 			}
