@@ -817,11 +817,6 @@ sap.ui.define([
 				description: "Enter a search term",
 				notForEmployees: false
 			}, {
-				name: "street",
-				shortText: "Street",
-				description: "Enter a street address",
-				notForEmployees: false
-			}, {
 				name: "currency",
 				shortText: "Currency",
 				description: "Enter a currency for payments",
