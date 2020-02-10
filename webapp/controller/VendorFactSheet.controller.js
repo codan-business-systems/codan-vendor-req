@@ -195,10 +195,12 @@ sap.ui.define([
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
 				this._sObjectPath = this._oBindingContext.getPath();
 				this._readQuestions();
+				this._resetAttachmentRequirements(this._sCompanyCode);
 
 				this._bindView(this._sObjectPath);
 
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
+				this.getModel().setProperty(this._sObjectPath = "/paymentTerms", "Z008");
 			}.bind(this));
 
 		},
@@ -820,6 +822,11 @@ sap.ui.define([
 				name: "currency",
 				shortText: "Currency",
 				description: "Enter a currency for payments",
+				notForEmployees: false
+			}, {
+				name: "country",
+				shortText: "Country",
+				description: "Enter address country",
 				notForEmployees: false
 			}];
 
