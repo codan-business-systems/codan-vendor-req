@@ -86,6 +86,8 @@ sap.ui.define([
 				this.setValueState(sap.ui.core.ValueState.Error)
 					.setValueStateText(oResult.errMsg);
 			}
+			
+			return oResult;
 		},
 
 		_isAbnValid: function(value) {
