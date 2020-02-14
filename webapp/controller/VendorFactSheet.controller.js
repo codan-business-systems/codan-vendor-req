@@ -297,8 +297,6 @@ sap.ui.define([
 		},
 
 		onSubmit: function () {
-			var that = this;
-
 			if (!this._validateReq()) {
 				this.displayMessagesPopover();
 				return;
@@ -540,12 +538,9 @@ sap.ui.define([
 		changeAttachment: function (oEvent) {
 
 			var id = this.getModel().getProperty(this._sObjectPath).id,
-				that = this,
-				event = oEvent;
-
-			var oModel = this.getModel(),
+				oModel = this.getModel(),
 				upload = oEvent.getSource();
-			oModel.refreshSecurityToken();
+				oModel.refreshSecurityToken();
 
 			upload.setUploadUrl("/sap/opu/odata/sap/Z_VENDOR_REQ_SRV/Attachments");
 			upload.addHeaderParameter(new sap.m.UploadCollectionParameter({
