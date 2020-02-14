@@ -10,6 +10,10 @@ sap.ui.define([
 				mandatory: {
 					type: "boolean",
 					defaultValue: false
+				},
+				trimSpaces: {
+					type: "boolean",
+					defaultValue: true
 				}
 			}
 		},
@@ -34,6 +38,9 @@ sap.ui.define([
 
 		/* Mandatory Setting */
 		_bMandatory: false,
+		
+		/* Setting to trim spaces on live change */
+		_bTrimSpaces: true,
 
 		init: function() {
 			sap.m.Input.prototype.init.apply(this, arguments);
@@ -44,8 +51,11 @@ sap.ui.define([
 				locale: sap.ui.getCore().getConfiguration().getLanguage()
 			});
 
-			/* Attach the ABN Change event */
+			/* Attach the ABN Live Change event */
 			this.attachLiveChange(this.onAbnChange);
+			
+			/* Attach the ABN Change event */
+			this.attachChange(this.checkTrimSpaces);
 
 		},
 
@@ -60,9 +70,21 @@ sap.ui.define([
 			this._validate(this.getValue());
 
 		},
+		
+		getMandatory: function() {
+			return this._bMandatory;
+		},
 
 		setMandatory: function(bVal) {
 			this._bMandatory = bVal;
+		},
+		
+		getTrimSpaces: function() {
+			return this._bTrimSpaces;
+		},
+		
+		setTrimSpaces: function(bVal) {
+			this._bTrimSpaces = bVal;
 		},
 
 		onAbnChange: function(oEvent) {
@@ -70,6 +92,17 @@ sap.ui.define([
 			var sValue = oEvent.getParameters().value.replace(/\s+/g, "");
 			this._validate(sValue);
 
+		},
+		
+		checkTrimSpaces: function(oEvent) {
+			
+			if (!this.getTrimSpaces()) {
+				return;
+			}
+			var sValue = oEvent.getParameters().value.replace(/\s+/g, "");
+			if (sValue !== oEvent.getParameters().value) {
+				this.setValue(sValue);
+			}
 		},
 
 		_validate: function(sValue) {
