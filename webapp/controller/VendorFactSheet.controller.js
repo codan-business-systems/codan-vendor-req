@@ -449,6 +449,7 @@ sap.ui.define([
 					MessageBox.error("Error retrieving bank details", {
 						title: "An error has occurred"
 					});
+					sap.ui.core.BusyIndicator.hide();
 				}
 			});
 
@@ -1166,7 +1167,7 @@ sap.ui.define([
 		newBankDialogOk: function () {
 			if (this.validateNewBankDialog()) {
 				this.newBankDialogCancel();
-				this.onSubmit();
+				this.continueSubmissionAfterQuestionnaire();
 			}
 		},
 
