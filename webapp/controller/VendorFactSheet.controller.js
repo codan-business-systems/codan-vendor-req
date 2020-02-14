@@ -539,7 +539,7 @@ sap.ui.define([
 
 			var id = this.getModel().getProperty(this._sObjectPath).id,
 				oModel = this.getModel(),
-				upload = oEvent.getSource();
+				upload = oEvent.getSource(),
 				oModel.refreshSecurityToken();
 
 			upload.setUploadUrl("/sap/opu/odata/sap/Z_VENDOR_REQ_SRV/Attachments");
