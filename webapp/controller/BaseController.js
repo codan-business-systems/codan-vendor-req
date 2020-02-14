@@ -126,7 +126,7 @@ sap.ui.define([
 				this.getRouter().navTo("search", {}, true);
 			}
 
-		},
+		}
 
 	});
 
