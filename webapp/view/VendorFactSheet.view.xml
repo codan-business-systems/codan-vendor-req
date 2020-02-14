@@ -12,9 +12,9 @@
 			<ObjectHeader title="{name1} ({vendorId})" condensed="true" id="factSheetObjectHeader" backgroundDesign="Transparent"
 				visible="{detailView>/existingVendor}"/>
 			<MessageStrip text="{i18n>newVendorExplainText}" visible="{= !${detailView>/existingVendor} }" type="Information" showIcon="true"/>
-			<HBox width="100%">
-				<VBox width="50%" height="100%">
-					<Panel id="basicDetailPanel">
+			<HBox width="100%" height="auto" class="zEqualHeightFlexBox">
+				<!--<VBox width="50%" height="100%">-->
+					<Panel id="basicDetailPanel" class="zEqualHeightPanel">
 						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyVendorBasicDetail" layout="ResponsiveGridLayout" backgroundDesign="Solid"
 							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
 							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
@@ -47,15 +47,17 @@
 							</f:content>
 						</f:SimpleForm>
 					</Panel>
-				</VBox>
-				<VBox width="50%" height="100%">
-					<Panel id="contactDetailsPanel">
-						<f:SimpleForm editable="true" adjustLabelSpan="false" id="modifyContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+				<!--</VBox>
+				<VBox width="50%" height="100%">-->
+					<Panel id="contactDetailsPanel" class="zEqualHeightPanel">
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="purchasingContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
 							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
 							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
 							<f:toolbar>
 								<Toolbar>
-									<Title text="Contact Details"/>
+									<Title text="Purchasing Details"/>
+									<ToolbarSpacer/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>purchaseContactDetailsHelpText}"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -65,14 +67,29 @@
 								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail"
 									required="{= ${detailView>/editMode} &amp;&amp; ${vendorType} !== 'E' }"/>
 								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}"/>
+							</f:content>
+						</f:SimpleForm>
+						
+						<f:SimpleForm editable="true" adjustLabelSpan="false" id="ContactDetails" layout="ResponsiveGridLayout" backgroundDesign="Solid"
+							width="auto" columnsM="12" columnsL="12" columnsXL="12" emptySpanXL="0" emptySpanL="0" emptySpanM="0" labelSpanL="4" labelSpanS="4"
+							labelSpanM="4" labelSpanXL="4" maxContainerCols="12" height="100%">
+							<f:toolbar>
+								<Toolbar>
+									<Title text="Accounts Details"/>
+									<ToolbarSpacer/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>accountContactDetailsHelpText}"/>
+								</Toolbar>
+							</f:toolbar>
+							<f:content>
 								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
 								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
 								<Label id="accountsEmailLabel" text="{i18n>lblAccountsEmail}" labelFor="accountsEmail" required="{detailView>/editMode}"/>
-								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>
+								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>	
 							</f:content>
 						</f:SimpleForm>
+						
 					</Panel>
-				</VBox>
+				<!--</VBox>-->
 			</HBox>
 			<HBox width="100%">
 				<VBox width="50%" height="100%">

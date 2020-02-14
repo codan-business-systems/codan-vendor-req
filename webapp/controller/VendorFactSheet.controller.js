@@ -224,6 +224,44 @@ sap.ui.define([
 			this._oHelpPopover.openBy(event.getSource());
 
 		},
+		
+		showPurchaseContactDetailsHelp: function(event) {
+			if (!this._oHelpPopover) {
+				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
+				this.getView().addDependent(this.oHelpPopover);
+			}
+
+			var oModel = this.getModel("detailView"),
+				title = this.getResourceBundle().getText("purchaseContactDetailsHelpTitle");
+
+			oModel.setProperty("/helpPopoverTitle", title);
+			oModel.setProperty("/helpPopoverText", "Some Text");
+
+			this._oHelpPopover.setTitle(title);
+
+			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("purchaseContactDetailsHelpText"));
+
+			this._oHelpPopover.openBy(event.getSource());
+		},
+		
+		showAccountContactDetailsHelp: function(event) {
+			if (!this._oHelpPopover) {
+				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
+				this.getView().addDependent(this.oHelpPopover);
+			}
+
+			var oModel = this.getModel("detailView"),
+				title = this.getResourceBundle().getText("accountContactDetailsHelpTitle");
+
+			oModel.setProperty("/helpPopoverTitle", title);
+			oModel.setProperty("/helpPopoverText", "Some Text");
+
+			this._oHelpPopover.setTitle(title);
+
+			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("accountContactDetailsHelpText"));
+
+			this._oHelpPopover.openBy(event.getSource());
+		},
 
 		/**
 		 * Binds the view to the object path.

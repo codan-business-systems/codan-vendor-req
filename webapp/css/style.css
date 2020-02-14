@@ -59,3 +59,7 @@
 .zEqualHeightPanel>.sapMPanelContent {
 	height: 100% !important;
 }
+
+.zEqualHeightPanel {
+	height: 100% !important;
+}
