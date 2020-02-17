@@ -202,7 +202,8 @@ sap.ui.define([
 				this._bindView(this._sObjectPath);
 
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
-				this.getModel().setProperty(this._sObjectPath = "/paymentTerms", "Z008");
+				this.getModel().setProperty(this._sObjectPath + "/paymentTerms", "Z008");
+				this.getModel().setProperty(this._sObjectPath + "/paymentTermsText", "Default");
 			}.bind(this));
 
 		},
@@ -995,7 +996,9 @@ sap.ui.define([
 				}));
 			} else {
 
-				if (!req.ToAttachments.length && attachmentRequirements.length !== 0) {
+				var uploadCollection = this.getView().byId("attachments");
+
+				if (uploadCollection && uploadCollection.getItems().length === 0 && attachmentRequirements.length !== 0) {
 					messages.push(new Message({
 						message: "No attachments have been uploaded",
 						description: "There are no attachments, but there are mandatory attachment requirements. Upload the required documentation",
@@ -1152,7 +1155,7 @@ sap.ui.define([
 				this._oQuestionDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.Questionnaire", this);
 				this.getView().addDependent(this._oQuestionDialog);
 			}
-			
+
 			this.setCurrentQuestions();
 
 			this._oQuestionDialog.open();
@@ -1202,6 +1205,7 @@ sap.ui.define([
 
 		questionnaireSelectionChange: function (event) {
 			var sourcePath = event.getSource().getBindingContext("detailView").getPath(),
+				sourceQuestion = event.getSource().getBindingContext("detailView").getObject(),
 				newValue = event.getParameter("selectedIndex") === 1 ? "X" : "-",
 				model = this.getModel("detailView");
 
@@ -1210,6 +1214,19 @@ sap.ui.define([
 				model.setProperty(sourcePath + "/responseText", "");
 			}
 			event.getSource().setValueState(ValueState.None);
+
+			// Check if any questions have this question as their parent
+			var children = model.getProperty("/questions").filter(function (o) {
+				return o.parentQuestion === sourceQuestion.questionId;
+			});
+
+			if (children.length > 0) {
+				children.forEach(function (o) {
+					o.visible = o.status && o.parentQuestionResponse === newValue;
+				});
+
+				sap.ui.getCore().byId("questionList").getBinding("items").refresh(true);
+			}
 		},
 
 		closeQuestionnaireDialog: function (bSilent) {
@@ -1277,7 +1294,7 @@ sap.ui.define([
 		_readQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				model = this.getModel();
-				
+
 			detailModel.setProperty("/allQuestions", []);
 			detailModel.setProperty("/questions", []);
 
@@ -1341,28 +1358,29 @@ sap.ui.define([
 			detailModel.setProperty("/attachmentRequirements", attachmentRequirements);
 			detailModel.setProperty("/attachmentsRequired", attachmentRequirements.length > 0);
 		},
-		
-		setCurrentQuestions: function() {
+
+		setCurrentQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				allQuestions = detailModel.getProperty("/allQuestions"),
 				existingVendor = detailModel.getProperty("/existingVendor"),
 				editBankDetails = detailModel.getProperty("/editBankDetails");
-				
+
 			if (detailModel.getProperty("/questions").length > 0) {
 				return;
 			}
-			
-			var questions = allQuestions.filter(function(o) {
+
+			var questions = allQuestions.filter(function (o) {
 					return (!existingVendor && o.newRequest) ||
 						(editBankDetails && o.bankChange) ||
 						(existingVendor && o.otherChange);
 				})
 				.map(function (o) {
 					return Object.assign({
-						complete: false
+						complete: false,
+						visible: o.status && !o.parentQuestion
 					}, o);
 				});
-			
+
 			detailModel.setProperty("/questions", questions);
 		},
 
