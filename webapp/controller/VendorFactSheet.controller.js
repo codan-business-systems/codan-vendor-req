@@ -224,8 +224,8 @@ sap.ui.define([
 			this._oHelpPopover.openBy(event.getSource());
 
 		},
-		
-		showPurchaseContactDetailsHelp: function(event) {
+
+		showPurchaseContactDetailsHelp: function (event) {
 			if (!this._oHelpPopover) {
 				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
 				this.getView().addDependent(this.oHelpPopover);
@@ -243,8 +243,8 @@ sap.ui.define([
 
 			this._oHelpPopover.openBy(event.getSource());
 		},
-		
-		showAccountContactDetailsHelp: function(event) {
+
+		showAccountContactDetailsHelp: function (event) {
 			if (!this._oHelpPopover) {
 				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
 				this.getView().addDependent(this.oHelpPopover);
@@ -541,7 +541,7 @@ sap.ui.define([
 			var id = this.getModel().getProperty(this._sObjectPath).id,
 				oModel = this.getModel(),
 				upload = oEvent.getSource();
-				oModel.refreshSecurityToken();
+			oModel.refreshSecurityToken();
 
 			upload.setUploadUrl("/sap/opu/odata/sap/Z_VENDOR_REQ_SRV/Attachments");
 			upload.addHeaderParameter(new sap.m.UploadCollectionParameter({
@@ -735,13 +735,13 @@ sap.ui.define([
 					return Object.assign({}, q);
 				});
 			} else if (!detailModel.getProperty("/changeRequestMode")) {
-				
+
 				detailModel.getProperty("/Questions").forEach(function (q) {
 					var questionKey = model.createKey("/Questions", {
 						requestId: id,
 						questionId: q.questionId
 					});
-					
+
 					var question = {
 						requestId: id,
 						questionId: q.questionId,
@@ -800,7 +800,7 @@ sap.ui.define([
 					}
 				});
 			} else {
-				
+
 				delete req.ToApprovals;
 				delete req.ToQuestions;
 
@@ -991,6 +991,17 @@ sap.ui.define([
 					type: MessageType.Error,
 					processor: that.getOwnerComponent().getModel()
 				}));
+			} else {
+
+				if (!req.ToAttachments.length && attachmentRequirements.length !== 0) {
+					messages.push(new Message({
+						message: "No attachments have been uploaded",
+						description: "There are no attachments, but there are mandatory attachment requirements. Upload the required documentation",
+						type: MessageType.Error,
+						processor: that.getOwnerComponent().getModel()
+					}));
+				}
+
 			}
 
 			// Check Name, ABN and Bank Details are unique
