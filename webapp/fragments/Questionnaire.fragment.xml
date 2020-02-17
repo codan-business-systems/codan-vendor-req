@@ -3,7 +3,7 @@
 		<content>
 			<MessageStrip text="Please answer the below questions to finalise this vendor request."/>
 			<!-- > -->
-			<List id="questionList" items="{ path: 'detailView>/Questions', filters: { path: 'status', operator: 'NE', value1: '' } }">
+			<List id="questionList" items="{ path: 'detailView>/questions', filters: { path: 'status', operator: 'NE', value1: '' } }">
 				<CustomListItem class="questionnaireLI">
 					<Label text="{detailView>questionText}" required="{ parts: ['detailView>status'], formatter: '.formatter.questionMandatory' }" class="questionnaireRBGLabel"/>
 					<RadioButtonGroup selectedIndex="{ parts: ['detailView>yesNo'], formatter: '.formatter.yesNoSelectedIndex' }" select="questionnaireSelectionChange"

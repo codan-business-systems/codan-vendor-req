@@ -38,6 +38,8 @@ sap.ui.define([
 			banks: [],
 			attachmentRequirements: [],
 			allAttachmentRequirements: [],
+			questions: [],
+			allQuestions: [],
 			attachmentsRequired: false,
 			changeRequestMode: false
 		},
@@ -730,13 +732,13 @@ sap.ui.define([
 
 			// Merge Questions
 			if (!id) {
-				req.ToQuestions = detailModel.getProperty("/Questions").map(function (q) {
+				req.ToQuestions = detailModel.getProperty("/questions").map(function (q) {
 
 					return Object.assign({}, q);
 				});
 			} else if (!detailModel.getProperty("/changeRequestMode")) {
 
-				detailModel.getProperty("/Questions").forEach(function (q) {
+				detailModel.getProperty("/questions").forEach(function (q) {
 					var questionKey = model.createKey("/Questions", {
 						requestId: id,
 						questionId: q.questionId
@@ -1150,6 +1152,8 @@ sap.ui.define([
 				this._oQuestionDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.Questionnaire", this);
 				this.getView().addDependent(this._oQuestionDialog);
 			}
+			
+			this.setCurrentQuestions();
 
 			this._oQuestionDialog.open();
 		},
@@ -1273,6 +1277,9 @@ sap.ui.define([
 		_readQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				model = this.getModel();
+				
+			detailModel.setProperty("/allQuestions", []);
+			detailModel.setProperty("/questions", []);
 
 			model.read(this._sObjectPath + "/ToQuestions", {
 				success: function (data) {
@@ -1280,7 +1287,7 @@ sap.ui.define([
 						return Object.assign({}, q);
 					});
 
-					detailModel.setProperty("/Questions", questions);
+					detailModel.setProperty("/allQuestions", questions);
 				}
 			});
 		},
@@ -1333,6 +1340,30 @@ sap.ui.define([
 
 			detailModel.setProperty("/attachmentRequirements", attachmentRequirements);
 			detailModel.setProperty("/attachmentsRequired", attachmentRequirements.length > 0);
+		},
+		
+		setCurrentQuestions: function() {
+			var detailModel = this.getModel("detailView"),
+				allQuestions = detailModel.getProperty("/allQuestions"),
+				existingVendor = detailModel.getProperty("/existingVendor"),
+				editBankDetails = detailModel.getProperty("/editBankDetails");
+				
+			if (detailModel.getProperty("/questions").length > 0) {
+				return;
+			}
+			
+			var questions = allQuestions.filter(function(o) {
+					return (!existingVendor && o.newRequest) ||
+						(editBankDetails && o.bankChange) ||
+						(existingVendor && o.otherChange);
+				})
+				.map(function (o) {
+					return Object.assign({
+						complete: false
+					}, o);
+				});
+			
+			detailModel.setProperty("/questions", questions);
 		},
 
 		editBankDetailsChange: function (event) {
