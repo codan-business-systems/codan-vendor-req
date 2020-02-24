@@ -1,0 +1,28 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<Dialog title="Approvals" id="approverListDialog">
+		<content>
+			<MessageStrip text="Please specify approvers for the workflow.\nTo select an approver, click on the approval step"/>
+			<List id="approvalWorkflowList" items="{ToApprovals}">
+				<items>
+					<StandardListItem 
+						icon="sap-icon://person-placeholder" 
+						iconInset="false"
+						iconDensityAware="true"
+						title="{stepDescription}"
+						description="{ parts: [ 'approverName', 'userSelected' ], formatter: '.formatter.formatApproverName' }"
+						infoState="{ parts: [ 'approverName', 'userSelected' ], formatter: '.formatter.formatApproverInfoState' }"
+						info="{ parts: [ 'approverName', 'userSelected' ], formatter: '.formatter.formatApproverInfo' }"
+						type="Active"
+						press="openSelectApproverDialog"
+					/>	
+				</items>
+			</List>
+		</content>
+		<endButton>
+			<Button text="{i18n>btnCancel}" type="Reject" press="approversCancel"/>
+		</endButton>
+		<beginButton>
+			<Button text="OK" type="Emphasized" press="approversOk"/>
+		</beginButton>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,5 +1,6 @@
 sap.ui.define([
-	], function () {
+	"sap/ui/core/ValueState"
+	], function (ValueState) {
 		"use strict";
 
 		return {
@@ -25,7 +26,35 @@ sap.ui.define([
 					return -1;
 				}
 				return sYesNo === "X" ? 1 : 0;
-			}
+			},
+			
+			formatApproverName: function(sApproverName, bUserSelected) {
+				if (!bUserSelected) {
+					return "No selection required";	
+				}
+				
+				if (!sApproverName) {
+					return "Not Selected";
+				}
+				
+				return sApproverName;
+			},
+			
+			formatApproverInfoState: function(sApproverName, bUserSelected) {
+				if (!bUserSelected || sApproverName) {
+					return ValueState.Success;	
+				}
+				
+				return ValueState.Error;
+			},
+			
+			formatApproverInfo: function(sApproverName, bUserSelected) {
+				if (!bUserSelected || sApproverName) {
+					return "OK";
+				}
+				
+				return "Select an Approver";
+			},
 		};
 
 	}

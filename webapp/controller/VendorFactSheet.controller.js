@@ -327,7 +327,14 @@ sap.ui.define([
 				return;
 			}
 
-			that._saveReq(true);
+			var checkPromise = this._checkApproverRequired();
+			checkPromise.then(function () {
+				this._openApproverDialog();
+			}.bind(this));
+
+			checkPromise.catch(function () {
+				this._saveReq(true);
+			}.bind(this));
 		},
 
 		onSave: function () {
@@ -734,8 +741,10 @@ sap.ui.define([
 			// Merge Questions
 			if (!id) {
 				req.ToQuestions = detailModel.getProperty("/questions").map(function (q) {
-
-					return Object.assign({}, q);
+					var result = Object.assign({}, q);
+					delete result.complete;
+					delete result.visible;
+					return result;
 				});
 			} else if (!detailModel.getProperty("/changeRequestMode")) {
 
@@ -1244,14 +1253,15 @@ sap.ui.define([
 		questionnaireOk: function (event) {
 			if (this.validateQuestionnaire()) {
 				this.closeQuestionnaireDialog(true);
-				this.continueSubmissionAfterQuestionnaire();
+				this._saveReq(false, this.continueSubmissionAfterQuestionnaire.bind(this));
 			}
 		},
 
 		validateQuestionnaire: function (event) {
 			var list = sap.ui.getCore().byId("questionList"),
 				listItems = list.getItems(),
-				result = true;
+				result = true,
+				that = this;
 
 			listItems.forEach(function (l) {
 
@@ -1262,8 +1272,8 @@ sap.ui.define([
 				rbg.setValueState(ValueState.None);
 				txt.setValueState(ValueState.None);
 
-				if (formatter.questionMandatory(q.status)) {
-					if (!q.yesNo && formatter.yesNoResponseRequired(q.responseType)) {
+				if (that.formatter.questionMandatory(q.status)) {
+					if (!q.yesNo && that.formatter.yesNoResponseRequired(q.responseType)) {
 						rbg.setValueState(ValueState.Error);
 						result = false;
 					}
@@ -1500,6 +1510,116 @@ sap.ui.define([
 			if (paymentMethod) {
 				currentPaymentMethods.push(paymentMethod);
 				detailModel.setProperty("/paymentMethods", currentPaymentMethods);
+			}
+		},
+
+		_checkApproverRequired: function () {
+			var model = this.getModel(),
+				that = this;
+
+			return new Promise(function (res, rej) {
+				model.read(that._sObjectPath + "/ToApprovals", {
+					success: function (data) {
+						data.results.some(function (a) {
+							return a.userSelected;
+						}) ? res() : rej();
+					}
+				});
+			});
+		},
+
+		_openApproverDialog: function () {
+			if (!this._oApproverDialog) {
+				this._oApproverDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.ApproverListDialog", this);
+				this.getView().addDependent(this._oApproverDialog);
+			}
+
+			var approvalList = sap.ui.getCore().byId("approvalWorkflowList"),
+				model = this.getModel(),
+				approver = model.getProperty(this._sObjectPath + "/businessUnitApprover"),
+				approverName = model.getProperty(this._sObjectPath + "/businessUnitApproverName");
+
+			if (approvalList) {
+				approvalList.getItems().forEach(function (i) {
+					var context = i.getBindingContext();
+
+					if (context.getObject().userSelected) {
+						model.setProperty(this._sObjectPath + "/approver", approver);
+						model.setProperty(this._sObjectPath + "/approverName", approverName);
+					}
+				});
+			}
+
+			this._oApproverDialog.open();
+		},
+
+		approversCancel: function (event, bSilent) {
+			if (this._oApproverDialog) {
+				this._oApproverDialog.close();
+			}
+
+			this.getModel().resetChanges();
+
+			if (!bSilent) {
+				MessageToast.show("Submission Cancelled", {
+					duration: 5000
+				});
+			}
+		},
+
+		approversOk: function (event) {
+			if (this._oApproverDialog) {
+				this._oApproverDialog.close();
+			}
+			
+			this._saveReq(true);
+
+		},
+
+		openSelectApproverDialog: function (event) {
+
+			this._approverBindingContext = event.getSource().getBindingContext();
+			var authLevel = this._approverBindingContext.getObject().authLevel,
+				filters = [];
+
+			if (!this._oSelectApproverDialog) {
+				this._oSelectApproverDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.ApproverSelect", this);
+				this.getView().addDependent(this._oSelectApproverDialog);
+			}
+
+			filters.push(new Filter({
+				path: "authLevel",
+				operator: FilterOperator.EQ,
+				value1: authLevel
+			}));
+
+			filters.push(new Filter({
+				path: "companyCode",
+				operator: FilterOperator.EQ,
+				value1: this.getModel().getProperty(this._sObjectPath + "/companyCode")
+			}));
+
+			sap.ui.getCore().byId("selectApproverDialog").getBinding("items").filter(filters);
+
+			this._oSelectApproverDialog.open();
+		},
+
+		_selectApproverConfirmed: function (event) {
+
+			var context = event.getParameter("selectedItem").getBindingContext().getObject(),
+				approver = context.userId,
+				approverName = context.userName;
+
+			this.getModel().setProperty(this._approverBindingContext.getPath() + "/approver", approver);
+			this.getModel().setProperty(this._approverBindingContext.getPath() + "/approverName", approverName);
+			this.getModel().setProperty(this._sObjectPath + "/businessUnitApprover", approver);
+			this.getModel().setProperty(this._sObjectPath + "/businessUnitApproverName", approverName);
+
+		},
+
+		_selectApproverCancelled: function (event) {
+			if (this._oSelectApproverDialog) {
+				this._oSelectApproverDialog.close();
 			}
 		}
 	});
