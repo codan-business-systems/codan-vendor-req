@@ -1537,15 +1537,16 @@ sap.ui.define([
 			var approvalList = sap.ui.getCore().byId("approvalWorkflowList"),
 				model = this.getModel(),
 				approver = model.getProperty(this._sObjectPath + "/businessUnitApprover"),
-				approverName = model.getProperty(this._sObjectPath + "/businessUnitApproverName");
+				approverName = model.getProperty(this._sObjectPath + "/businessUnitApproverName"),
+				that = this;
 
 			if (approvalList) {
 				approvalList.getItems().forEach(function (i) {
 					var context = i.getBindingContext();
 
 					if (context.getObject().userSelected) {
-						model.setProperty(this._sObjectPath + "/approver", approver);
-						model.setProperty(this._sObjectPath + "/approverName", approverName);
+						model.setProperty(that._sObjectPath + "/approver", approver);
+						model.setProperty(that._sObjectPath + "/approverName", approverName);
 					}
 				});
 			}
