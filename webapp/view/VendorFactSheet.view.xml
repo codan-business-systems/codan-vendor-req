@@ -311,5 +311,8 @@
 		<semantic:messagesIndicator>
 			<semantic:MessagesIndicator visible="{detailView>/editMode}" press="displayMessagesPopover"/>
 		</semantic:messagesIndicator>
+		<semantic:negativeAction>
+			<semantic:NegativeAction visible="{= ${detailView>/editMode} &amp;&amp; !!${id} }" text="Delete" press="deleteRequest"/>
+		</semantic:negativeAction>
 	</semantic:FullscreenPage>
 </mvc:View>

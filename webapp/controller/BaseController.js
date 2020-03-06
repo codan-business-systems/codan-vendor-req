@@ -123,7 +123,7 @@ sap.ui.define([
 			if (sPreviousHash !== undefined) {
 				history.go(-1);
 			} else {
-				this.getRouter().navTo("search", {}, true);
+				this.getRouter().navTo("searchVendor", {}, true);
 			}
 
 		}

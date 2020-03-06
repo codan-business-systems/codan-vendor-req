@@ -1647,6 +1647,27 @@ sap.ui.define([
 
 			this._oSelectApproverDialog.open();
 		},
+		
+		deleteRequest: function() {
+			MessageBox.confirm("All data will be lost and the request will be cancelled. This action cannot be undone.\n\nDo you wish to continue?", {
+				actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+				title: "Data Loss Confirmation",
+				onClose: function(sAction) {
+					if (sAction === MessageBox.Action.YES) {
+						this._deleteRequest();	
+					}
+				}.bind(this)
+			});
+		},
+		
+		_deleteRequest: function() {
+			this.getModel().setProperty(this._sObjectPath + "/deleted", true);	
+			
+			this._saveReq(false, function() {
+				MessageToast.show("The request has been successfully deleted");
+				this.onNavBack();
+			}.bind(this), true);
+		},
 
 		_selectApproverConfirmed: function (event) {
 
