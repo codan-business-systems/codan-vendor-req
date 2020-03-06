@@ -152,7 +152,7 @@ sap.ui.define([
 			var btnSearch = this.getView().byId("btnSearch");
 
 			if (btnSearch) {
-				btnSearch.setEnabled(!!oEvent.getParameter("newValue") && oEvent.getParameter("newValue").length > 2);
+				btnSearch.setEnabled(!!oEvent.getParameter("newValue") && oEvent.getParameter("newValue").replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, " ").trim().length > 2);
 			}
 		},
 
