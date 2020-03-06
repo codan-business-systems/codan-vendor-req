@@ -143,7 +143,6 @@ sap.ui.define([
 			this._sCompanyCode = oStartupParams.companyCode;
 			this._setBusy(true);
 
-			this.getModel("detailView").setProperty("/existingVendor", true);
 			this.getModel("detailView").setProperty("/editBankDetails", false);
 			this.getModel("detailView").setProperty("/editMode", true);
 			this.getModel("detailView").setProperty("/changeRequestMode", true);
@@ -153,6 +152,7 @@ sap.ui.define([
 					id: this._sRequestId
 				});
 
+				this._resetAttachmentRequirements(this._sCompanyCode);
 				this._readQuestions();
 				this._bindView(this._sObjectPath);
 			}.bind(this));
@@ -292,7 +292,9 @@ sap.ui.define([
 					dataReceived: function (data) {
 
 						oViewModel.setProperty("/busy", false);
-						this._parsePaymentMethods(data.getParameter ? data.getParameter("data") : data);
+						var result = data.getParameter ? data.getParameter("data") : data;
+						oViewModel.setProperty("/existingVendor", !!result.vendorId);
+						this._parsePaymentMethods(result);
 					}.bind(this)
 				}
 			});
@@ -718,6 +720,11 @@ sap.ui.define([
 				req = model.getProperty(this._sObjectPath),
 				id = req.id,
 				bUpdateId = !id;
+				
+			if (!this._validateOnSave(req)) {
+				this.displayMessagesPopover();
+				return;
+			}
 
 			if (bSubmit) {
 				if (req.id) {
@@ -826,6 +833,42 @@ sap.ui.define([
 				});
 			}
 
+		},
+		
+		_validateOnSave: function () {
+
+			var messages = [];
+			this.oMessageManager.removeAllMessages();
+			
+			// Check that the ABN (if specified) is not in error
+			var abnInput = this.getView().byId("abn");
+			if (abnInput && abnInput.getValueState() === ValueState.Error) {
+				messages.push(new Message({
+					message: abnInput.getValueStateText(),
+					description: "Modify the ABN/Tax Number of the vendor",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/abn",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			// Check that the name is valid
+			var name1 = this.getView().byId("name1");
+			if (name1 && name1.getValueState() === ValueState.Error) {
+				messages.push(new Message({
+					message: name1.getValueStateText(),
+					description: "Check that this vendor does not already exist",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/abn",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			if (messages.length > 0) {
+				this.oMessageManager.addMessages(messages);
+			}
+
+			return messages.length === 0;
 		},
 
 		_validateReq: function () {
