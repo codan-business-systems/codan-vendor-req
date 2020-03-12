@@ -1,0 +1,7 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<ResponsivePopover title="Additional Information" class="sapUiContentPadding" placement="Right" height="40rem" width="30rem">
+		<content>
+			<TextArea id="questionExplainPopoverText" value="{detailView>explainText}" editable="false" rows="15" cols="60"/>
+		</content>
+	</ResponsivePopover>
+</core:FragmentDefinition>

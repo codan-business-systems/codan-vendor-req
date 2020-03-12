@@ -5,17 +5,22 @@
 			<!-- > -->
 			<List id="questionList" items="{ path: 'detailView>/questions', filters: { path: 'visible', operator: 'EQ', value1: true } }">
 				<CustomListItem class="questionnaireLI">
-					<Label text="{detailView>questionText}" required="{ parts: ['detailView>status'], formatter: '.formatter.questionMandatory' }" class="questionnaireRBGLabel"/>
-					<RadioButtonGroup selectedIndex="{ parts: ['detailView>yesNo'], formatter: '.formatter.yesNoSelectedIndex' }" select="questionnaireSelectionChange"
-						visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.yesNoResponseRequired' }" columns="2" class="questionnaireRBG">
-						<buttons>
-							<RadioButton text="No"/>
-							<RadioButton text="Yes"/>
-						</buttons>
-					</RadioButtonGroup>
+					<Label text="{detailView>questionText}" required="{ parts: ['detailView>status'], formatter: '.formatter.questionMandatory' }"
+						class="questionnaireRBGLabel"/>
+					<HBox alignItems="Center">
+						<RadioButtonGroup selectedIndex="{ parts: ['detailView>yesNo'], formatter: '.formatter.yesNoSelectedIndex' }"
+							select="questionnaireSelectionChange" visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.yesNoResponseRequired' }"
+							columns="2" class="questionnaireRBG">
+							<buttons>
+								<RadioButton text="No"/>
+								<RadioButton text="Yes"/>
+							</buttons>
+						</RadioButtonGroup>
+						<core:Icon src="sap-icon://sys-help" tooltip="Additional Information" visible="{= !!${detailView>explainText} }" press="showExplainText"/>
+					</HBox>
 					<TextArea id="freeTextDetails" value="{detailView>responseText}" placeholder="Provide details"
 						visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.responseTextVisible' }"
-						enabled="{ parts: [ 'detailView>responseType', 'detailView>yesNo' ], formatter: '.formatter.responseTextEnabled' }" 
+						enabled="{ parts: [ 'detailView>responseType', 'detailView>yesNo' ], formatter: '.formatter.responseTextEnabled' }"
 						liveChange="updateQuestionnaireResponseText" width="100%"/>
 				</CustomListItem>
 			</List>

@@ -47,6 +47,8 @@ sap.ui.define([
 		oMessageManager: {},
 
 		formatter: formatter,
+		
+		_oQuestionExplainTextPopover: {},
 
 		/**
 		 * Called when the worklist controller is instantiated, sets initial
@@ -77,6 +79,9 @@ sap.ui.define([
 			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
 			this.getOwnerComponent().getModel("countries").setSizeLimit(9999);
 			this.getOwnerComponent().getModel().setSizeLimit(9999);
+			
+			this._oQuestionExplainTextPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.QuestionExplainTextPopover", this);
+			this.getView().addDependent(this._oQuestionExplainTextPopover);
 		},
 
 		/**
@@ -660,6 +665,11 @@ sap.ui.define([
 			if (paymentTermsKey) {
 				if (valueHelpObj && valueHelpObj.selectable) {
 					model.setProperty(this._sObjectPath + "/paymentTermsText", valueHelpObj.paymentTermsText);
+					
+					if (valueHelpObj.warning) {
+						oEvent.getSource().setValueState(ValueState.Warning);
+						oEvent.getSource().setValueStateText("Payment terms are less than our standard payment terms.");
+					}
 				} else {
 					oEvent.getSource().setValueState(ValueState.Error);
 					oEvent.getSource().setValueStateText("Payment terms are invalid");
@@ -1186,7 +1196,8 @@ sap.ui.define([
 									return {
 										paymentTermsKey: o.paymentTermsKey,
 										paymentTermsText: o.paymentTermsText,
-										selectable: o.selectable
+										selectable: o.selectable,
+										warning: o.warning
 									};
 								});
 								detailModel.setProperty("/allPaymentTerms", paymentTerms);
@@ -1259,7 +1270,8 @@ sap.ui.define([
 			var sourcePath = event.getSource().getBindingContext("detailView").getPath(),
 				sourceQuestion = event.getSource().getBindingContext("detailView").getObject(),
 				newValue = event.getParameter("selectedIndex") === 1 ? "X" : "-",
-				model = this.getModel("detailView");
+				model = this.getModel("detailView"),
+				questions = model.getProperty("/questions");
 
 			model.setProperty(sourcePath + "/yesNo", newValue);
 			if (event.getParameter("selectedIndex") !== 1) {
@@ -1268,13 +1280,21 @@ sap.ui.define([
 			event.getSource().setValueState(ValueState.None);
 
 			// Check if any questions have this question as their parent
-			var children = model.getProperty("/questions").filter(function (o) {
+			var children = model.getProperty("/allQuestions").filter(function (o) {
 				return o.parentQuestion === sourceQuestion.questionId;
 			});
 
 			if (children.length > 0) {
 				children.forEach(function (o) {
-					o.visible = o.status && o.parentQuestionResponse === newValue;
+					var question = questions.find(function(q) {
+						return q.questionId === o.questionId;
+					});
+					
+					if (!question) {
+						questions.push(o);
+						question = questions[questions.length - 1];
+					}
+					question.visible = o.status && o.parentQuestionResponse === newValue;
 				});
 
 				sap.ui.getCore().byId("questionList").getBinding("items").refresh(true);
@@ -1553,6 +1573,7 @@ sap.ui.define([
 			if (paymentMethod) {
 				currentPaymentMethods.push(paymentMethod);
 				detailModel.setProperty("/paymentMethods", currentPaymentMethods);
+				this.getModel().setProperty(this._sObjectPath + "/paymentTermWarning", true);
 			}
 		},
 
@@ -1686,6 +1707,14 @@ sap.ui.define([
 			if (this._oSelectApproverDialog) {
 				this._oSelectApproverDialog.close();
 			}
+		},
+		
+		showExplainText: function(event) {
+			this._oQuestionExplainTextPopover.bindElement({
+				path: event.getSource().getBindingContext("detailView").getPath(),
+				model: "detailView"
+			});
+			this._oQuestionExplainTextPopover.openBy(event.getSource());
 		}
 	});
 });
