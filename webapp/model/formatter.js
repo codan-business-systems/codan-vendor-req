@@ -67,7 +67,7 @@ sap.ui.define([
 				}
 				
 				return "Select an Approver";
-			},
+			}
 		};
 
 	}
