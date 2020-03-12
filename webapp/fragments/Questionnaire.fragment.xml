@@ -16,6 +16,8 @@
 								<RadioButton text="Yes"/>
 							</buttons>
 						</RadioButtonGroup>
+						<CheckBox selected="{ parts: ['detailView>yesNo'], formatter: '.formatter.checkBoxSelected' }" select="questionnaireCheckBoxSelectionChange"
+								  visible="{= ${detailView>responseType} === 'CHK' }"/>
 						<core:Icon src="sap-icon://sys-help" tooltip="Additional Information" visible="{= !!${detailView>explainText} }" press="showExplainText"/>
 					</HBox>
 					<TextArea id="freeTextDetails" value="{detailView>responseText}" placeholder="Provide details"

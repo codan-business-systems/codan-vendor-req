@@ -1329,14 +1329,30 @@ sap.ui.define([
 			listItems.forEach(function (l) {
 
 				var q = l.getBindingContext("detailView").getObject(),
-					rbg = l.getContent()[1],
+					rbg = "",
+				
+					findInput = function(i) {
+						if (i.getValueState && i.getVisible && i.getVisible()) {
+							rbg = i;
+							return true;
+						}
+						
+						return i.getItems && i.getItems().find(findInput);
+					},
+				
+					// Find the radio button group or checkbox 
 					txt = l.getContent()[2];
-
-				rbg.setValueState(ValueState.None);
-				txt.setValueState(ValueState.None);
+				
+				if (l.getContent().find(findInput)) {
+					rbg.setValueState(ValueState.None);
+				}
+				
+				if (txt) {
+					txt.setValueState(ValueState.None);
+				}
 
 				if (that.formatter.questionMandatory(q.status)) {
-					if (!q.yesNo && that.formatter.yesNoResponseRequired(q.responseType)) {
+					if (!q.yesNo && (that.formatter.yesNoResponseRequired(q.responseType) || q.responseType === "CHK")) {
 						rbg.setValueState(ValueState.Error);
 						result = false;
 					}
@@ -1349,7 +1365,7 @@ sap.ui.define([
 
 				}
 
-				if (q.responseType === "YNT" && q.yesNo === "X" && !q.responseText) {
+				if (formatter.responseTextEnabled(q.responseType, q.yesNo) && !q.responseText) {
 					txt.setValueState(ValueState.Error);
 					txt.setValueStateText("Response required");
 					result = false;
@@ -1715,6 +1731,10 @@ sap.ui.define([
 				model: "detailView"
 			});
 			this._oQuestionExplainTextPopover.openBy(event.getSource());
+		},
+		
+		questionnaireCheckBoxSelectionChange: function (event) {
+			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath()	+ "/yesNo", event.getParameter("selected") ? "X" : " ");
 		}
 	});
 });

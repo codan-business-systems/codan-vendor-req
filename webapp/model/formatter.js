@@ -6,7 +6,7 @@ sap.ui.define([
 		return {
 			
 			yesNoResponseRequired: function(sResponseType) {
-				return sResponseType.indexOf("YN") > -1;
+				return sResponseType.indexOf("Y") > -1 && sResponseType.indexOf("N") > -1;
 			},
 			
 			questionMandatory: function(sStatus) {
@@ -18,7 +18,16 @@ sap.ui.define([
 			},
 			
 			responseTextEnabled: function(sResponseType, sYesNo) {
-				return sResponseType === "TXT" || sResponseType.indexOf("T") > -1 && sYesNo === "X";
+				switch (sResponseType) {
+					case "TXT":
+						return true;
+					case "YNT":
+						return sYesNo === "X";
+					case "NYT":
+						return sYesNo === "-";
+					default:
+						return false;
+				}
 			},
 			
 			yesNoSelectedIndex: function(sYesNo) {
@@ -26,6 +35,10 @@ sap.ui.define([
 					return -1;
 				}
 				return sYesNo === "X" ? 1 : 0;
+			},
+			
+			checkBoxSelected: function(sYesNo) {
+				return sYesNo === "X";
 			},
 			
 			formatApproverName: function(sApproverName, bUserSelected) {
