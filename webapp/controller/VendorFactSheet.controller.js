@@ -1452,13 +1452,10 @@ sap.ui.define([
 			var detailModel = this.getModel("detailView"),
 				allQuestions = detailModel.getProperty("/allQuestions"),
 				existingVendor = detailModel.getProperty("/existingVendor"),
-				editBankDetails = detailModel.getProperty("/editBankDetails");
+				editBankDetails = detailModel.getProperty("/editBankDetails"),
+				questions = detailModel.getProperty("/questions"),
 
-			if (detailModel.getProperty("/questions").length > 0) {
-				return;
-			}
-
-			var questions = allQuestions.filter(function (o) {
+				allQuestions = allQuestions.filter(function (o) {
 					return (!existingVendor && o.newRequest) ||
 						(editBankDetails && o.bankChange) ||
 						(existingVendor && o.otherChange);
@@ -1468,7 +1465,17 @@ sap.ui.define([
 						complete: false,
 						visible: o.status && !o.parentQuestion
 					}, o);
+				})
+				.forEach(function(o) {
+					if (!questions.find(function(q) {
+						return q.questionId === o.questionId;
+					})) {
+						questions.push(o);	
+					}
 				});
+			questions.sort(function(q1, q2) {
+				return q1.questionId < q2.questionId ? -1 : 1;
+			});
 
 			detailModel.setProperty("/questions", questions);
 		},
