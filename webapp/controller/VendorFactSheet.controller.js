@@ -1725,12 +1725,6 @@ sap.ui.define([
 			this.getModel().setProperty(this._sObjectPath + "/businessUnitApproverName", approverName);
 
 		},
-
-		_selectApproverCancelled: function (event) {
-			if (this._oSelectApproverDialog) {
-				this._oSelectApproverDialog.close();
-			}
-		},
 		
 		showExplainText: function(event) {
 			this._oQuestionExplainTextPopover.bindElement({

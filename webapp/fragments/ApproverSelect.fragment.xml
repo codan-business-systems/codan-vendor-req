@@ -1,6 +1,6 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
 	<SelectDialog title="Select an Approver" id="selectApproverDialog" items="{/Approvers}" busy="{detailView>/busy}"
-		confirm="_selectApproverConfirmed" cancel="_selectApproverCancelled">
+		confirm="_selectApproverConfirmed">
 		<items>
 			<StandardListItem
 				title="{userId}"
