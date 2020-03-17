@@ -47,8 +47,9 @@ sap.ui.define([
 		oMessageManager: {},
 
 		formatter: formatter,
-		
+
 		_oQuestionExplainTextPopover: {},
+		_oPaymentTermsJustificationDialog: {},
 
 		/**
 		 * Called when the worklist controller is instantiated, sets initial
@@ -79,9 +80,12 @@ sap.ui.define([
 			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
 			this.getOwnerComponent().getModel("countries").setSizeLimit(9999);
 			this.getOwnerComponent().getModel().setSizeLimit(9999);
-			
+
 			this._oQuestionExplainTextPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.QuestionExplainTextPopover", this);
 			this.getView().addDependent(this._oQuestionExplainTextPopover);
+
+			this._oPaymentTermsJustificationDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.PaymentTermsJustificationDialog", this);
+			this.getView().addDependent(this._oPaymentTermsJustificationDialog);
 		},
 
 		/**
@@ -313,7 +317,17 @@ sap.ui.define([
 			}
 
 			// Show the questionnaire
-			this._openQuestionnaireDialog();
+			var checkPaymentTerms = this._checkPaymentTermsJustification();
+
+			checkPaymentTerms.then(function () {
+				this._openQuestionnaireDialog();
+			}.bind(this));
+
+			checkPaymentTerms.catch(function () {
+				MessageToast.show("Submission Cancelled", {
+					duration: 5000
+				});
+			});
 
 		},
 
@@ -665,7 +679,8 @@ sap.ui.define([
 			if (paymentTermsKey) {
 				if (valueHelpObj && valueHelpObj.selectable) {
 					model.setProperty(this._sObjectPath + "/paymentTermsText", valueHelpObj.paymentTermsText);
-					
+					model.setProperty(this._sObjectPath + "/paymentTermsWarning", valueHelpObj.warning);
+
 					if (valueHelpObj.warning) {
 						oEvent.getSource().setValueState(ValueState.Warning);
 						oEvent.getSource().setValueStateText("Payment terms are less than our standard payment terms.");
@@ -730,7 +745,7 @@ sap.ui.define([
 				req = model.getProperty(this._sObjectPath),
 				id = req.id,
 				bUpdateId = !id;
-				
+
 			if (!this._validateOnSave(req)) {
 				this.displayMessagesPopover();
 				return;
@@ -844,12 +859,12 @@ sap.ui.define([
 			}
 
 		},
-		
+
 		_validateOnSave: function () {
 
 			var messages = [];
 			this.oMessageManager.removeAllMessages();
-			
+
 			// Check that the ABN (if specified) is not in error
 			var abnInput = this.getView().byId("abn");
 			if (abnInput && abnInput.getValueState() === ValueState.Error) {
@@ -861,7 +876,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the name is valid
 			var name1 = this.getView().byId("name1");
 			if (name1 && name1.getValueState() === ValueState.Error) {
@@ -873,7 +888,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			if (messages.length > 0) {
 				this.oMessageManager.addMessages(messages);
 			}
@@ -1212,6 +1227,29 @@ sap.ui.define([
 			]);
 		},
 
+		_checkPaymentTermsJustification: function () {
+
+			var that = this;
+
+			return new Promise(function (res, rej) {
+				if (that.getModel().getProperty(that._sObjectPath + "/paymentTermsWarning")) {
+					
+					that._paymentTermsOK = false;
+					
+					that._oPaymentTermsJustificationDialog.attachAfterClose(function (event) {
+						if (that._paymentTermsOK) {
+							res();
+						} else {
+							rej();
+						}
+					}, this);
+
+					that._oPaymentTermsJustificationDialog.open();
+				}
+			});
+
+		},
+
 		_openQuestionnaireDialog: function () {
 
 			if (!this._oQuestionDialog) {
@@ -1222,6 +1260,27 @@ sap.ui.define([
 			this.setCurrentQuestions();
 
 			this._oQuestionDialog.open();
+		},
+
+		okPaymentTermsDialog: function (event) {
+			if (!this.getModel().getProperty(this._sObjectPath + "/paymentTermsJustificationText")) {
+				var textArea = sap.ui.getCore().byId("paymentTermsJustificationText"),
+					message = "Enter a justification for the payment terms selection";
+
+				if (textArea) {
+					textArea.setValueState(ValueState.Error);
+					textArea.setValueStateText(message);
+				} else {
+					MessageBox.error(message);
+				}
+			} else {
+				this._paymentTermsOK = true;
+				this._oPaymentTermsJustificationDialog.close();
+			}
+		},
+
+		closePaymentTermsDialog: function (event) {
+			this._oPaymentTermsJustificationDialog.close();
 		},
 
 		_showNewBankDialog: function () {
@@ -1286,10 +1345,10 @@ sap.ui.define([
 
 			if (children.length > 0) {
 				children.forEach(function (o) {
-					var question = questions.find(function(q) {
+					var question = questions.find(function (q) {
 						return q.questionId === o.questionId;
 					});
-					
+
 					if (!question) {
 						questions.push(o);
 						question = questions[questions.length - 1];
@@ -1330,23 +1389,23 @@ sap.ui.define([
 
 				var q = l.getBindingContext("detailView").getObject(),
 					rbg = "",
-				
-					findInput = function(i) {
+
+					findInput = function (i) {
 						if (i.getValueState && i.getVisible && i.getVisible()) {
 							rbg = i;
 							return true;
 						}
-						
+
 						return i.getItems && i.getItems().find(findInput);
 					},
-				
+
 					// Find the radio button group or checkbox 
 					txt = l.getContent()[2];
-				
+
 				if (l.getContent().find(findInput)) {
 					rbg.setValueState(ValueState.None);
 				}
-				
+
 				if (txt) {
 					txt.setValueState(ValueState.None);
 				}
@@ -1466,14 +1525,14 @@ sap.ui.define([
 						visible: o.status && !o.parentQuestion
 					}, o);
 				})
-				.forEach(function(o) {
-					if (!questions.find(function(q) {
-						return q.questionId === o.questionId;
-					})) {
-						questions.push(o);	
+				.forEach(function (o) {
+					if (!questions.find(function (q) {
+							return q.questionId === o.questionId;
+						})) {
+						questions.push(o);
 					}
 				});
-			questions.sort(function(q1, q2) {
+			questions.sort(function (q1, q2) {
 				return q1.questionId < q2.questionId ? -1 : 1;
 			});
 
@@ -1659,7 +1718,7 @@ sap.ui.define([
 			if (this._oApproverDialog) {
 				this._oApproverDialog.close();
 			}
-			
+
 			this._saveReq(true);
 
 		},
@@ -1691,23 +1750,24 @@ sap.ui.define([
 
 			this._oSelectApproverDialog.open();
 		},
-		
-		deleteRequest: function() {
-			MessageBox.confirm("All data will be lost and the request will be cancelled. This action cannot be undone.\n\nDo you wish to continue?", {
-				actions: [MessageBox.Action.YES, MessageBox.Action.NO],
-				title: "Data Loss Confirmation",
-				onClose: function(sAction) {
-					if (sAction === MessageBox.Action.YES) {
-						this._deleteRequest();	
-					}
-				}.bind(this)
-			});
+
+		deleteRequest: function () {
+			MessageBox.confirm(
+				"All data will be lost and the request will be cancelled. This action cannot be undone.\n\nDo you wish to continue?", {
+					actions: [MessageBox.Action.YES, MessageBox.Action.NO],
+					title: "Data Loss Confirmation",
+					onClose: function (sAction) {
+						if (sAction === MessageBox.Action.YES) {
+							this._deleteRequest();
+						}
+					}.bind(this)
+				});
 		},
-		
-		_deleteRequest: function() {
-			this.getModel().setProperty(this._sObjectPath + "/deleted", true);	
-			
-			this._saveReq(false, function() {
+
+		_deleteRequest: function () {
+			this.getModel().setProperty(this._sObjectPath + "/deleted", true);
+
+			this._saveReq(false, function () {
 				MessageToast.show("The request has been successfully deleted");
 				this.onNavBack();
 			}.bind(this), true);
@@ -1725,17 +1785,22 @@ sap.ui.define([
 			this.getModel().setProperty(this._sObjectPath + "/businessUnitApproverName", approverName);
 
 		},
-		
-		showExplainText: function(event) {
+
+		showExplainText: function (event) {
 			this._oQuestionExplainTextPopover.bindElement({
 				path: event.getSource().getBindingContext("detailView").getPath(),
 				model: "detailView"
 			});
 			this._oQuestionExplainTextPopover.openBy(event.getSource());
 		},
-		
+
 		questionnaireCheckBoxSelectionChange: function (event) {
-			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath()	+ "/yesNo", event.getParameter("selected") ? "X" : " ");
+			this.getModel("detailView").setProperty(event.getSource().getBindingContext("detailView").getPath() + "/yesNo", event.getParameter(
+				"selected") ? "X" : " ");
+		},
+
+		cancelPaymentTermsDialog: function (event) {
+			this.closePaymentTermsDialog();
 		}
 	});
 });

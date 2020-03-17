@@ -1,0 +1,32 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form">
+<Dialog title="Payment Terms" contentWidth="40rem" id="paymentTermsJustificationDialog" showHeader="true">
+	<content>
+		<l:VerticalLayout width="100%">
+			<Text text="Please provide justification for the selected payment terms which are below our group standard terms (45 days after end of month)" class="sapUiSmallMargin"/>
+			<f:SimpleForm visible="{= ${detailView>/financeApproval} &amp;&amp; ${detailView>/approvalResult} === 'A' &amp;&amp; !${existingVendor} }">
+				<f:content>
+					<Label labelFor="paymentTerms" required="true" text="Payment Terms" class="zDecisionLabel"/>
+					<ComboBox id="paymentTerms" items="{
+						path: '/ValueHelpResults',
+						filters: {
+							path: 'property',
+							operator: 'EQ',
+							value1: 'paymentTerms'
+						}
+					}" selectedKey="{paymentTerms}" editable="true">
+						<core:Item key="{key}" text="{key}: {value}"/>
+					</ComboBox>
+					
+				</f:content>
+			</f:SimpleForm>
+			
+			<TextArea width="100%" value="{paymentTermsJustificationText}" 
+			placeholder="Enter justification for selected payment terms" id="paymentTermsJustificationText"/>
+		</l:VerticalLayout>
+	</content>
+	<buttons>
+			<Button text="{i18n>btnCancel}" type="Reject" press="cancelPaymentTermsDialog"/>
+			<Button text="{i18n>btnOk}" type="Emphasized" press="okPaymentTermsDialog"/>
+	</buttons>
+</Dialog>
+</core:FragmentDefinition>
