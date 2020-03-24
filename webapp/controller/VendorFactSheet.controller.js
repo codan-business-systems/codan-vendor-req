@@ -1245,6 +1245,8 @@ sap.ui.define([
 					}, this);
 
 					that._oPaymentTermsJustificationDialog.open();
+				} else {
+					res();
 				}
 			});
 

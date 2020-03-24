@@ -67,6 +67,10 @@ sap.ui.define([
 				}
 				
 				return "Select an Approver";
+			},
+			
+			formatFileSize: function(sFileSize) {
+				return parseFloat(sFileSize);
 			}
 		};
 
