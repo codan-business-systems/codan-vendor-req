@@ -41,7 +41,9 @@ sap.ui.define([
 			questions: [],
 			allQuestions: [],
 			attachmentsRequired: false,
-			changeRequestMode: false
+			changeRequestMode: false,
+			existingVendorMessage: "",
+			existingVendorMessageType: MessageType.None
 		},
 
 		oMessageManager: {},
@@ -113,6 +115,10 @@ sap.ui.define([
 				}, {
 					success: function (data) {
 						this._sObjectPath = "/Requests('" + data.id + "')";
+
+						if (this._sVendorId) {
+							this._setExistingVendorMessage(data);
+						}
 
 						this._readQuestions();
 						this._resetAttachmentRequirements(this._sCompanyCode);
@@ -1233,9 +1239,9 @@ sap.ui.define([
 
 			return new Promise(function (res, rej) {
 				if (that.getModel().getProperty(that._sObjectPath + "/paymentTermsWarning")) {
-					
+
 					that._paymentTermsOK = false;
-					
+
 					that._oPaymentTermsJustificationDialog.attachAfterClose(function (event) {
 						if (that._paymentTermsOK) {
 							res();
@@ -1803,6 +1809,26 @@ sap.ui.define([
 
 		cancelPaymentTermsDialog: function (event) {
 			this.closePaymentTermsDialog();
+		},
+
+		_setExistingVendorMessage: function (data) {
+
+			var model = this.getModel("detailView"),
+				existingVendorMessage = "",
+				existingVendorMessageType = MessageType.None;
+
+			if (data.vendorDeletionFlag) {
+				existingVendorMessage = "This vendor is flagged for deletion and cannot be updated.";
+				existingVendorMessageType = MessageType.Error;
+			} else {
+				if (!data.paymentTerms) {
+					existingVendorMessage = "This vendor has not been extended to your company code. You can request an update to extend the vendor.";
+					existingVendorMessageType = MessageType.Warning;
+				}
+			}
+
+			model.setProperty("/existingVendorMessage", existingVendorMessage);
+			model.setProperty("/existingVendorMessageType", existingVendorMessageType);
 		}
 	});
 });

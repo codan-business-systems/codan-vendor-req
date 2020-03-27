@@ -6,12 +6,13 @@
 		<semantic:content>
 			<Toolbar>
 				<ToolbarSpacer/>
-				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }" visible="{detailView>/existingVendor}"
+				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }" visible="{= ${detailView>/existingVendor} &amp;&amp; !${vendorDeletionFlag} }"
 					text="{= ${detailView>/editMode} ? ${i18n>btnCancel} : ${i18n>btnRequestUpdate} }" press="toggleEditMode"/>
 			</Toolbar>
 			<ObjectHeader title="{name1} ({vendorId})" condensed="true" id="factSheetObjectHeader" backgroundDesign="Transparent"
 				visible="{detailView>/existingVendor}"/>
 			<MessageStrip text="{i18n>newVendorExplainText}" visible="{= !${detailView>/existingVendor} }" type="Information" showIcon="true"/>
+			<MessageStrip text="{detailView>/existingVendorMessage}" visible="{= !!${detailView>/existingVendorMessage} }" type="{detailView>/existingVendorMessageType}" showIcon="true"/>
 			<HBox width="100%" height="auto" class="zEqualHeightFlexBox">
 				<!--<VBox width="50%" height="100%">-->
 					<Panel id="basicDetailPanel" class="zEqualHeightPanel">
