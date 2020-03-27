@@ -10,7 +10,11 @@
 					text="{= ${detailView>/editMode} ? ${i18n>btnCancel} : ${i18n>btnRequestUpdate} }" press="toggleEditMode"/>
 			</Toolbar>
 			<ObjectHeader title="{name1} ({vendorId})" condensed="true" id="factSheetObjectHeader" backgroundDesign="Transparent"
-				visible="{detailView>/existingVendor}"/>
+				visible="{detailView>/existingVendor}">
+				<attributes>
+					<ObjectAttribute title="Company Codes" text="{companyCodes}"/>
+				</attributes>
+			</ObjectHeader>
 			<MessageStrip text="{i18n>newVendorExplainText}" visible="{= !${detailView>/existingVendor} }" type="Information" showIcon="true"/>
 			<MessageStrip text="{detailView>/existingVendorMessage}" visible="{= !!${detailView>/existingVendorMessage} }" type="{detailView>/existingVendorMessageType}" showIcon="true"/>
 			<HBox width="100%" height="auto" class="zEqualHeightFlexBox">
