@@ -1,4 +1,6 @@
-<mvc:View xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:footerbar="sap.ushell.ui.footerbar" controllerName="req.vendor.codan.controller.SearchVendor">
+<mvc:View xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" 
+xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:footerbar="sap.ushell.ui.footerbar" controllerName="req.vendor.codan.controller.SearchVendor"
+xmlns:core="sap.ui.core">
   <Page id="page" navButtonPress="onNavBack" showNavButton="true" title="{i18n>searchVendorTitle}" backgroundDesign="Solid">
     <content>
     <HBox height="2rem"/>
@@ -44,7 +46,10 @@
         <items>
           <ColumnListItem type="Navigation" press="onSelectVendor">
             <cells>
-              <ObjectIdentifier title="{name} ({id})" id="vendorResultsName"/>
+              <HBox>
+            	<ObjectIdentifier title="{name} ({id})" id="vendorResultsName"/>
+            	<core:Icon color="red" src="sap-icon://alert" visible="{vendorDeletionFlag}"/>
+              </HBox>
               <Text text="{abn}" maxLines="0" id="vendorResultsAbn"/>
               <Text text="{addressStr}" maxLines="0" id="vendorResultsAddress"/>
             </cells>
