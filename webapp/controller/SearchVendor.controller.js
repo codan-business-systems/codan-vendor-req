@@ -149,10 +149,11 @@ sap.ui.define([
 		},
 
 		vendorNameChange: function (oEvent) {
-			var btnSearch = this.getView().byId("btnSearch");
+			var btnSearch = this.getView().byId("btnSearch"),
+				companyCodeSet = !!this.getModel("worklistView").getProperty("/companyCode");
 
 			if (btnSearch) {
-				btnSearch.setEnabled(!!oEvent.getParameter("newValue") && oEvent.getParameter("newValue").replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, " ").trim().length > 2);
+				btnSearch.setEnabled(companyCodeSet && !!oEvent.getParameter("newValue") && oEvent.getParameter("newValue").replace(/[^a-z0-9]/gmi, " ").replace(/\s+/g, " ").trim().length > 2);
 			}
 		},
 
