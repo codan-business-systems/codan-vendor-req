@@ -401,22 +401,34 @@ sap.ui.define([
 			var viewModel = this.getModel("detailView"),
 				model = this.getModel(),
 				editMode = viewModel.getProperty("/editMode"),
-				that = this;
-
-			if (editMode && model.hasPendingChanges()) {
+				that = this,
+				
+				changeEditMode = function() {
+					viewModel.setProperty("/editMode", !editMode);
+					that._resetMessages();
+				};
+				
+			if (!editMode && model.getProperty(this._sObjectPath + "/vendorDeletionFlag")) {
+				MessageBox.confirm("The vendor is currently deleted.\n\nDo you wish to request it be reinstated?", {
+					title: "Vendor Deleted",
+					onClose: function(sAction) {
+						if (sAction === "OK") {
+							changeEditMode();
+						}
+					}
+				});
+			} else if (editMode && model.hasPendingChanges()) {
 				MessageBox.confirm("All changes will be reset.\n\nDo you wish to continue?", {
 					title: "Data Loss Confirmation",
 					onClose: function (sAction) {
 						if (sAction === "OK") {
 							model.resetChanges();
-							viewModel.setProperty("/editMode", !editMode);
-							that._resetMessages();
+							changeEditMode();
 						}
 					}
 				});
 			} else {
-				viewModel.setProperty("/editMode", !editMode);
-				this._resetMessages();
+				changeEditMode();
 			}
 
 		},
@@ -1818,8 +1830,8 @@ sap.ui.define([
 				existingVendorMessageType = MessageType.None;
 
 			if (data.vendorDeletionFlag) {
-				existingVendorMessage = "This vendor is flagged for deletion and cannot be updated.";
-				existingVendorMessageType = MessageType.Error;
+				existingVendorMessage = "This vendor is flagged for deletion and cannot be updated. You can request an update to reinstate the vendor.";
+				existingVendorMessageType = MessageType.Warning;
 			} else {
 				if (!data.paymentTerms) {
 					existingVendorMessage = "This vendor has not been extended to your company code. You can request an update to extend the vendor.";

@@ -6,7 +6,7 @@
 		<semantic:content>
 			<Toolbar>
 				<ToolbarSpacer/>
-				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }" visible="{= ${detailView>/existingVendor} &amp;&amp; !${vendorDeletionFlag} }"
+				<Button type="{= ${detailView>/editMode} ? 'Reject' : 'Emphasized' }" visible="{= ${detailView>/existingVendor} }"
 					text="{= ${detailView>/editMode} ? ${i18n>btnCancel} : ${i18n>btnRequestUpdate} }" press="toggleEditMode"/>
 			</Toolbar>
 			<ObjectHeader title="{name1} ({vendorId})" condensed="true" id="factSheetObjectHeader" backgroundDesign="Transparent"
