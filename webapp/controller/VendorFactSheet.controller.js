@@ -402,16 +402,16 @@ sap.ui.define([
 				model = this.getModel(),
 				editMode = viewModel.getProperty("/editMode"),
 				that = this,
-				
-				changeEditMode = function() {
+
+				changeEditMode = function () {
 					viewModel.setProperty("/editMode", !editMode);
 					that._resetMessages();
 				};
-				
+
 			if (!editMode && model.getProperty(this._sObjectPath + "/vendorDeletionFlag")) {
 				MessageBox.confirm("The vendor is currently deleted.\n\nDo you wish to request it be reinstated?", {
 					title: "Vendor Deleted",
-					onClose: function(sAction) {
+					onClose: function (sAction) {
 						if (sAction === "OK") {
 							changeEditMode();
 						}
@@ -1066,14 +1066,26 @@ sap.ui.define([
 			// Payment method F is only valid for outside Australia
 			if (this.getModel("detailView").getProperty("/editBankDetails") && paymentMethods.find(function (p) {
 					return p.paymentMethodCode === "F";
-				}) && req.accountCountry && req.accountCountry === "AU") {
-				messages.push(new Message({
-					message: "Payment method F is only valid for non-AU Bank accounts",
-					description: "Choose payment method E",
-					type: MessageType.Error,
-					target: that._sObjectPath + "/accountCountry",
-					processor: that.getOwnerComponent().getModel()
-				}));
+				})) {
+				if (req.accountCountry && req.accountCountry === "AU") {
+					messages.push(new Message({
+						message: "Payment method F is only valid for non-AU Bank accounts",
+						description: "Choose payment method E",
+						type: MessageType.Error,
+						target: that._sObjectPath + "/accountCountry",
+						processor: that.getOwnerComponent().getModel()
+					}));
+				}
+
+				if (!req.bankSwiftCode) {
+					messages.push(new Message({
+						message: "Payment method F requires a SWIFT key",
+						description: "Enter a SWIFT key",
+						type: MessageType.Error,
+						target: that._sObjectPath + "/bankSwiftCode",
+						processor: that.getOwnerComponent().getModel()
+					}));
+				}
 			}
 
 			// If there are attachment requirements, check that all have been marked as completed
@@ -1578,12 +1590,23 @@ sap.ui.define([
 					"currentVendor": currentVendor || ""
 				},
 				success: function (data) {
-					if (!data.id) {
+					if (data.results.length === 0) {
 						return;
 					}
 
+					var vendors = "";
+
+					data.results.forEach(function (d) {
+						if (!vendors) {
+							vendors = d.id;
+						} else {
+							vendors = vendors + ", " + d.id;
+						}
+					});
+
 					source.setValueState(ValueState.Error);
-					source.setValueStateText("A Vendor (" + data.id + ") already exists with this ABN");
+					source.setValueStateText(vendors.indexOf(",") > 0 ? "Multiple Vendors (" + vendors + ") already exist with this ABN" :
+						"A Vendor (" + vendors + ") already exists with this ABN");
 				},
 				error: function (err) {
 					MessageBox.error("Error checking duplicate ABN", {
@@ -1610,12 +1633,23 @@ sap.ui.define([
 					"currentVendor": currentVendor || ""
 				},
 				success: function (data) {
-					if (!data.id) {
+					if (data.results.length === 0) {
 						return;
 					}
 
+					var vendors = "";
+
+					data.results.forEach(function (d) {
+						if (!vendors) {
+							vendors = d.id;
+						} else {
+							vendors = vendors + ", " + d.id;
+						}
+					});
+
 					source.setValueState(ValueState.Error);
-					source.setValueStateText("A Vendor (" + data.id + ") already exists with this name");
+					source.setValueStateText(vendors.indexOf(",") > 0 ? "Multiple Vendors (" + vendors + ") already exist with this name" :
+						"A Vendor (" + vendors + ") already exists with this name");
 				},
 				error: function (err) {
 					MessageBox.error("Error checking duplicate name", {
@@ -1830,7 +1864,8 @@ sap.ui.define([
 				existingVendorMessageType = MessageType.None;
 
 			if (data.vendorDeletionFlag) {
-				existingVendorMessage = "This vendor is flagged for deletion and cannot be updated. You can request an update to reinstate the vendor.";
+				existingVendorMessage =
+					"This vendor is flagged for deletion and cannot be updated. You can request an update to reinstate the vendor.";
 				existingVendorMessageType = MessageType.Warning;
 			} else {
 				if (!data.paymentTerms) {
