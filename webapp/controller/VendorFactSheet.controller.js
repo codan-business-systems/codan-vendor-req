@@ -1604,7 +1604,7 @@ sap.ui.define([
 						}
 					});
 
-					source.setValueState(ValueState.Error);
+					source.setValueState(ValueState.Warning);
 					source.setValueStateText(vendors.indexOf(",") > 0 ? "Multiple Vendors (" + vendors + ") already exist with this ABN" :
 						"A Vendor (" + vendors + ") already exists with this ABN");
 				},
@@ -1647,7 +1647,7 @@ sap.ui.define([
 						}
 					});
 
-					source.setValueState(ValueState.Error);
+					source.setValueState(ValueState.Warning);
 					source.setValueStateText(vendors.indexOf(",") > 0 ? "Multiple Vendors (" + vendors + ") already exist with this name" :
 						"A Vendor (" + vendors + ") already exists with this name");
 				},
