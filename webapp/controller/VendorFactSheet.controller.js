@@ -207,6 +207,8 @@ sap.ui.define([
 			detailModel.setProperty("/editBankDetails", false);
 			detailModel.setProperty("/editMode", true);
 			detailModel.setProperty("/changeRequestMode", false);
+			detailModel.setProperty("/existingVendorMessage", "");
+			detailModel.setProperty("/existingVendorMessageType", MessageType.None);
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
