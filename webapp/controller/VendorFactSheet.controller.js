@@ -1002,6 +1002,27 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
+			
+			// Check that the email addresses are valid
+			if (!formatter.validateEmail(req.accountsEmail)) {
+				messages.push(new Message({
+					message: "Accounts email address is invalid",
+					description: "Enter a valid email address",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/accountsEmail",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			if (!formatter.validateEmail(req.purchEmail)) {
+				messages.push(new Message({
+					message: "Purchasing email address is invalid",
+					description: "Enter a valid email address",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/purchEmail",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
 
 			// Check that the payment terms are valid
 			if (req.paymentTerms && !req.paymentTermsText) {
@@ -1878,6 +1899,20 @@ sap.ui.define([
 
 			model.setProperty("/existingVendorMessage", existingVendorMessage);
 			model.setProperty("/existingVendorMessageType", existingVendorMessageType);
+		},
+		
+		onEmailChange: function(event) {
+			
+			if (!formatter.validateEmail(event.getParameter("newValue"))) {
+				var valueState = ValueState.Error,
+					valueStateText = "Email address is not valid";
+			} else {
+				valueState = ValueState.None;
+			}
+			
+			event.getSource().setValueState(valueState);
+			event.getSource().setValueStateText(valueStateText);
+			
 		}
 	});
 });

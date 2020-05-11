@@ -73,7 +73,8 @@
 								<Input id="purchTel" value="{purchTel}" editable="{detailView>/editMode}"/>
 								<Label id="purchEmailLabel" text="{i18n>lblPurchEmail}" labelFor="purchEmail"
 									required="{= ${detailView>/editMode} &amp;&amp; ${vendorType} !== 'E' }"/>
-								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}"/>
+								<Input id="purchEmail" value="{purchEmail}" editable="{detailView>/editMode}" 
+									   change="onEmailChange"/>
 							</f:content>
 						</f:SimpleForm>
 						
@@ -91,7 +92,8 @@
 								<Label id="accountsTelLabel" text="{i18n>lblAccountsTel}" labelFor="accountsTel" required="{detailView>/editMode}"/>
 								<Input id="accountsTel" value="{accountsTel}" editable="{detailView>/editMode}"/>
 								<Label id="accountsEmailLabel" text="{i18n>lblAccountsEmail}" labelFor="accountsEmail" required="{detailView>/editMode}"/>
-								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"/>	
+								<Input id="accountsEmail" value="{accountsEmail}" editable="{detailView>/editMode}" required="{detailView>/editMode}"
+									  change="onEmailChange"/>	
 							</f:content>
 						</f:SimpleForm>
 						
