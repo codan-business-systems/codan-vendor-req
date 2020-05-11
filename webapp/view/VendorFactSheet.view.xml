@@ -312,7 +312,8 @@
 			<semantic:SaveAction press="onSave" visible="{detailView>/editMode}"/>
 		</semantic:saveAction>
 		<semantic:customFooterContent>
-			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{= ${detailView>/editMode} &amp;&amp; !${status}}"/>
+			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{= ${detailView>/editMode} &amp;&amp; !${status}}"
+					enabled="{= !${detailView>/busy} }"/>
 		</semantic:customFooterContent>
 		<semantic:messagesIndicator>
 			<semantic:MessagesIndicator visible="{detailView>/editMode}" press="displayMessagesPopover"/>

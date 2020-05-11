@@ -319,10 +319,15 @@ sap.ui.define([
 		},
 
 		onSubmit: function () {
+			
+			var that = this;
+			
 			if (!this._validateReq()) {
 				this.displayMessagesPopover();
 				return;
 			}
+			
+			this._setBusy(true);
 
 			// Show the questionnaire
 			var checkPaymentTerms = this._checkPaymentTermsJustification();
@@ -332,6 +337,7 @@ sap.ui.define([
 			}.bind(this));
 
 			checkPaymentTerms.catch(function () {
+				that._setBusy(false);
 				MessageToast.show("Submission Cancelled", {
 					duration: 5000
 				});
@@ -1416,11 +1422,14 @@ sap.ui.define([
 		},
 
 		closeQuestionnaireDialog: function (bSilent) {
+			
+			var that = this;
 			if (this._oQuestionDialog) {
 				this._oQuestionDialog.close();
 			}
 
 			if (!bSilent || typeof bSilent !== "boolean") {
+				that._setBusy(false);
 				MessageToast.show("Submission Cancelled", {
 					duration: 5000
 				});
