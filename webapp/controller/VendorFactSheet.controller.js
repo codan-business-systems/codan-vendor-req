@@ -988,7 +988,7 @@ sap.ui.define([
 			});
 
 			// ABN is mandatory for AU vendors
-			if (req.country === "AU" && !req.abn && !req.vendorType === "E") {
+			if (req.country === "AU" && !req.abn && req.vendorType !== "E") {
 				messages.push(new Message({
 					message: "ABN is mandatory for AU companies",
 					description: "Enter the ABN/Tax Number of the vendor",
