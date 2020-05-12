@@ -20,7 +20,7 @@
 								  visible="{= ${detailView>responseType} === 'CHK' }"/>
 						<core:Icon src="sap-icon://sys-help" tooltip="Additional Information" visible="{= !!${detailView>explainText} }" press="showExplainText"/>
 					</HBox>
-					<TextArea id="freeTextDetails" value="{detailView>responseText}" placeholder="Provide details"
+					<TextArea value="{detailView>responseText}" placeholder="Provide details"
 						visible="{ parts: [ 'detailView>responseType' ], formatter: '.formatter.responseTextVisible' }"
 						enabled="{ parts: [ 'detailView>responseType', 'detailView>yesNo' ], formatter: '.formatter.responseTextEnabled' }"
 						liveChange="updateQuestionnaireResponseText" width="100%"/>
