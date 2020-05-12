@@ -1029,6 +1029,28 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
+			
+			// Check that the phone numbers are valid
+			if (!formatter.validatePhone(req.purchTel)) {
+				messages.push(new Message({
+					message: "Purchasing telephone is invalid",
+					description: "Enter numbers and spaces only",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/purchTel",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			// Check that the phone numbers are valid
+			if (!formatter.validatePhone(req.accountsTel)) {
+				messages.push(new Message({
+					message: "Accounts telephone is invalid",
+					description: "Enter numbers and spaces only",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/accountsTel",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
 
 			// Check that the payment terms are valid
 			if (req.paymentTerms && !req.paymentTermsText) {
@@ -1922,6 +1944,18 @@ sap.ui.define([
 			event.getSource().setValueState(valueState);
 			event.getSource().setValueStateText(valueStateText);
 			
+		},
+		
+		checkPhoneNo: function(event) {
+			if (!formatter.validatePhone(event.getParameter("newValue"))) {
+				var valueState = ValueState.Error,
+					valueStateText = "Enter numbers and spaces only";
+			} else {
+				valueState = ValueState.None;
+			}
+			
+			event.getSource().setValueState(valueState);
+			event.getSource().setValueStateText(valueStateText);
 		}
 	});
 });

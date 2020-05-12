@@ -87,6 +87,16 @@ sap.ui.define([
 			}
 
 			return email.match(emailRegex);
+		},
+		
+		validatePhone: function(phone) {
+			var phoneRegex = /[^\d\s]/g;
+			
+			if (!phone) {
+				return true;
+			}
+			
+			return !phone.match(phoneRegex);
 		}
 	};
 
