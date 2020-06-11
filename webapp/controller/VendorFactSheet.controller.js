@@ -221,6 +221,7 @@ sap.ui.define([
 				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
 				this.getModel().setProperty(this._sObjectPath + "/paymentTerms", "Z008");
 				this.getModel().setProperty(this._sObjectPath + "/paymentTermsText", "Default");
+				this.getModel().setProperty(this._sObjectPath + "/country", "AU");
 			}.bind(this));
 
 		},
@@ -1181,7 +1182,7 @@ sap.ui.define([
 
 			var abnField = this.getView().byId("abn");
 
-			if (abnField && abnField.getValueState() === ValueState.Error) {
+			if (abnField && abnField.getVisible() && abnField.getValueState() === ValueState.Error) {
 				messages.push(new Message({
 					message: abnField.getValueStateText(),
 					description: "Check that this vendor is not a duplicate",

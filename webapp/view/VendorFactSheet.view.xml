@@ -44,9 +44,10 @@
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
 								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
-								<Label id="abnLabel" text="{i18n>lblABN}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
+								<Label id="abnLabel" text="{= ${country} === 'AU' ? ${i18n>lblABN} : 'Tax Number'}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
 									required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
-								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E'}" change="checkDuplicateAbn"/>
+								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
+								<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }"/>
 								<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
 								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'E'}"/>
