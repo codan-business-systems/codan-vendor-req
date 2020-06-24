@@ -157,6 +157,10 @@ sap.ui.define([
 
 					//remove blank spaces
 					postcode = postcode.replace(/ /g, '');
+					
+					if (country === "CA" && postcode.length === postcodeMax - 1) {
+						postcode = postcode.substr(0,3) + " " + postcode.substr(3);	
+					}
 
 					//remove dashes
 					postcode = postcode.replace(/-/g, '');
@@ -167,9 +171,9 @@ sap.ui.define([
 							!postcode[0].match(/[a-z]/i) || //alpha
 							!postcode[1].match(/^\d$/) || //number
 							!postcode[2].match(/[a-z]/i) || //alpha
-							!postcode[3].match(/^\d$/) || //number
-							!postcode[4].match(/[a-z]/i) || //alpha
-							!postcode[5].match(/^\d$/) //number
+							!postcode[4].match(/^\d$/) || //number
+							!postcode[5].match(/[a-z]/i) || //alpha
+							!postcode[6].match(/^\d$/) //number
 						) {
 							postcodeValid = false;
 						}
