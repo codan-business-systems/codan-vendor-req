@@ -42,8 +42,13 @@
 								<Input id="name1" value="{name1}" editable="{detailView>/editMode}" change="checkDuplicateName"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
 								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
-								<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
-								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>
+								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country" required="{detailView>/editMode}"/>
+								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }"
+									change="countryChange">
+									<core:Item text="{countries>name}" key="{countries>key}"/>
+								</ComboBox>
+								<!--<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
+								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>-->
 								<Label id="abnLabel" text="{= ${country} === 'AU' ? ${i18n>lblABN} : 'Tax Number'}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
 									required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
 								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
@@ -116,11 +121,8 @@
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
-								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country" required="{detailView>/editMode}"/>
-								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }"
-									change="countryChange">
-									<core:Item text="{countries>name}" key="{countries>key}"/>
-								</ComboBox>
+								<Label id="street2Label" text="Street Supplement" labelFor="street2"/>
+								<Input id="street2" maxLength="40" value="{street2}" editable="{detailView>/editMode}"/>
 								<Label id="streetLabel" text="{i18n>lblStreet}" labelFor="street"/>
 								<Input id="houseNum1" maxLength="10" width="6rem" value="{houseNo}" editable="{detailView>/editMode}">
 									<layoutData>

@@ -1,5 +1,5 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
-	<Dialog title="New Bank" contentWidth="40rem" id="newBankDetailDialog">
+	<Dialog title="New Bank" contentWidth="40rem">
 		<content>
 			<MessageStrip showIcon="true" text="Bank number specified does not exist in SAP. Please provide detail to create this bank." 
 						  showCloseButton="false" type="Information" visible="{detailView>/editMode}"/>

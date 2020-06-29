@@ -140,7 +140,8 @@ sap.ui.define([
 		},
 
 		countryChange: function (oEvent) {
-			this._resetRegionFilters(oEvent.getSource().getSelectedKey());
+			var country = typeof oEvent === "string" ? oEvent : oEvent.getSource().getSelectedKey();
+			this._resetRegionFilters(country);
 		},
 
 		_resetRegionFilters: function (sCountry) {
@@ -205,6 +206,7 @@ sap.ui.define([
 
 			detailModel.setProperty("/existingVendor", false);
 			detailModel.setProperty("/editBankDetails", false);
+			detailModel.setProperty("/bankDetailsLocked", false);
 			detailModel.setProperty("/editMode", true);
 			detailModel.setProperty("/changeRequestMode", false);
 			detailModel.setProperty("/existingVendorMessage", "");
@@ -222,6 +224,7 @@ sap.ui.define([
 				this.getModel().setProperty(this._sObjectPath + "/paymentTerms", "Z008");
 				this.getModel().setProperty(this._sObjectPath + "/paymentTermsText", "Default");
 				this.getModel().setProperty(this._sObjectPath + "/country", "AU");
+				this.countryChange("AU");
 			}.bind(this));
 
 		},
@@ -316,6 +319,18 @@ sap.ui.define([
 					}.bind(this)
 				}
 			});
+			
+			var paymentTerms = this.getView().byId("paymentTerms");
+			if (paymentTerms && paymentTerms.setValueState) {
+				paymentTerms.setValueState(ValueState.None);
+			}
+			
+			var bankKey = this.getView().byId("bankKey");
+			if (bankKey && bankKey.setValueState) {
+				bankKey.setValueState(ValueState.None);
+			}
+			
+			oViewModel.setProperty("/bankDetailsLocked", false);
 
 		},
 
@@ -955,11 +970,6 @@ sap.ui.define([
 				description: "Enter an email address",
 				notForEmployees: false
 			}, {
-				name: "searchTerm",
-				shortText: "Search Term",
-				description: "Enter a search term",
-				notForEmployees: false
-			}, {
 				name: "currency",
 				shortText: "Currency",
 				description: "Enter a currency for payments",
@@ -1579,6 +1589,7 @@ sap.ui.define([
 				allRequirements = detailModel.getProperty("/allAttachmentRequirements"),
 				existingVendor = detailModel.getProperty("/existingVendor"),
 				editBankDetails = detailModel.getProperty("/editBankDetails"),
+				changeRequestMode = detailModel.getProperty("/changeRequestMode"),
 				attachmentRequirements = allRequirements.filter(function (o) {
 					return (!existingVendor && o.newRequest) ||
 						(editBankDetails && o.bankChange) ||
@@ -1586,7 +1597,7 @@ sap.ui.define([
 				})
 				.map(function (o) {
 					return Object.assign({
-						complete: false
+						complete: changeRequestMode
 					}, o);
 				});
 
