@@ -4,7 +4,7 @@
 			<MessageStrip showIcon="true" text="Bank number specified does not exist in SAP. Please provide detail to create this bank." 
 						  showCloseButton="false" type="Information" visible="{detailView>/editMode}"/>
 			
-			<f:SimpleForm editable="true" id="addItemForm" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
+			<f:SimpleForm editable="true" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
 				<f:content>
 					<Label id="bankNameLabel" required="true" labelFor="bankName" text="Bank Name"/>
 					<Input id="bankName" maxLength="60" value="{bankName}"/>

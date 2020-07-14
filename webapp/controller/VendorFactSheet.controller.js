@@ -50,8 +50,10 @@ sap.ui.define([
 
 		formatter: formatter,
 
-		_oQuestionExplainTextPopover: {},
-		_oPaymentTermsJustificationDialog: {},
+		_oQuestionExplainTextPopover: undefined,
+		_oPaymentTermsJustificationDialog: undefined,
+		_oNewBankDialog: undefined,
+		_oBankDialog: undefined,
 
 		/**
 		 * Called when the worklist controller is instantiated, sets initial
@@ -319,30 +321,30 @@ sap.ui.define([
 					}.bind(this)
 				}
 			});
-			
+
 			var paymentTerms = this.getView().byId("paymentTerms");
 			if (paymentTerms && paymentTerms.setValueState) {
 				paymentTerms.setValueState(ValueState.None);
 			}
-			
+
 			var bankKey = this.getView().byId("bankKey");
 			if (bankKey && bankKey.setValueState) {
 				bankKey.setValueState(ValueState.None);
 			}
-			
+
 			oViewModel.setProperty("/bankDetailsLocked", false);
 
 		},
 
 		onSubmit: function () {
-			
+
 			var that = this;
-			
+
 			if (!this._validateReq()) {
 				this.displayMessagesPopover();
 				return;
 			}
-			
+
 			this._setBusy(true);
 
 			// Show the questionnaire
@@ -372,20 +374,24 @@ sap.ui.define([
 				return;
 			}
 
-			// If bank details are entered, raise the verify dialog
-			if (that.getModel("detailView").getProperty("/editBankDetails")) {
-				that._showVerifyBankDialog();
-				return;
-			}
-
 			var checkPromise = this._checkApproverRequired();
 			checkPromise.then(function () {
-				this._openApproverDialog();
-			}.bind(this));
+				that._openApproverDialog();
+			});
 
 			checkPromise.catch(function () {
-				this._saveReq(true);
-			}.bind(this));
+				var verifyPromise = that._checkBankVerifyRequired();
+
+				verifyPromise.then(function () {
+					// If bank details are entered, raise the verify dialog
+					that._showVerifyBankDialog();
+				});
+
+				verifyPromise.catch(function () {
+					that._saveReq(true);
+				});
+			});
+
 		},
 
 		onSave: function () {
@@ -462,8 +468,6 @@ sap.ui.define([
 				if (this._oBankDialog.close) {
 					this._oBankDialog.close();
 				}
-				this._oBankDialog.destroy();
-				delete this._oBankDialog;
 			}
 
 			this.getModel("detailView").setProperty("/bankDetailPopup", {
@@ -658,9 +662,7 @@ sap.ui.define([
 				title: "Save Required",
 				onClose: function (sAction) {
 					if (sAction === "OK") {
-						that._saveReq(false, function () {
-							//oEvent.getSource().setSupressUpload(false);
-						});
+						that._saveReq(false);
 					}
 				}
 			});
@@ -780,125 +782,131 @@ sap.ui.define([
 
 		},
 
-		_saveReq: function (bSubmit, fOnSuccess) {
+		_saveReq: function (bSubmit) {
 
-			var model = this.getModel(),
-				detailModel = this.getModel("detailView"),
-				req = model.getProperty(this._sObjectPath),
-				id = req.id,
-				bUpdateId = !id;
+			var that = this;
 
-			if (!this._validateOnSave(req)) {
-				this.displayMessagesPopover();
-				return;
-			}
+			return new Promise(function (res, rej) {
 
-			if (bSubmit) {
-				if (req.id) {
-					req.status = "N";
-				} else {
-					model.setProperty(this._sObjectPath + "/status", "N");
-					req.status = "N";
-				}
-			}
+				var model = that.getModel(),
+					detailModel = that.getModel("detailView"),
+					req = model.getProperty(that._sObjectPath),
+					id = req.id,
+					bUpdateId = !id;
 
-			this._setBusy(true);
-
-			// Merge payment methods from the detail model
-			req.paymentMethods = "";
-			detailModel.getProperty("/paymentMethods").forEach(function (o) {
-				if (o.paymentMethodActive) {
-					req.paymentMethods += o.paymentMethodCode;
-				}
-			});
-
-			// Merge Questions
-			if (!id) {
-				req.ToQuestions = detailModel.getProperty("/questions").map(function (q) {
-					var result = Object.assign({}, q);
-					delete result.complete;
-					delete result.visible;
-					return result;
-				});
-			} else if (!detailModel.getProperty("/changeRequestMode")) {
-
-				detailModel.getProperty("/questions").forEach(function (q) {
-					var questionKey = model.createKey("/Questions", {
-						requestId: id,
-						questionId: q.questionId
-					});
-
-					var question = {
-						requestId: id,
-						questionId: q.questionId,
-						yesNo: q.yesNo,
-						responseText: q.responseText,
-						questionText: q.questionText,
-						responseType: q.responseType,
-						role: q.role,
-						status: q.status
-					};
-
-					model.update(questionKey, question);
-
-				});
-
-			}
-
-			var fnSuccess = function (data) {
-
-				// Ensure that the view is updated with the new req id.
-				if (bUpdateId) {
-					id = data.id;
-					this._sObjectPath = "/" + model.createKey("Requests", {
-						id: data.id
-					});
-					this._bindView(this._sObjectPath);
+				if (!that._validateOnSave(req)) {
+					that.displayMessagesPopover();
+					return;
 				}
 
 				if (bSubmit) {
-					model.resetChanges();
-					MessageBox.success(this.getResourceBundle().getText("msgCreateSuccess", [id]), {
-						title: "Success",
-						onClose: function () {
-							this._navBack();
-						}.bind(this)
+					if (req.id) {
+						req.status = "N";
+					} else {
+						model.setProperty(this._sObjectPath + "/status", "N");
+						req.status = "N";
+					}
+				}
+
+				that._setBusy(true);
+
+				// Merge payment methods from the detail model
+				req.paymentMethods = "";
+				detailModel.getProperty("/paymentMethods").forEach(function (o) {
+					if (o.paymentMethodActive) {
+						req.paymentMethods += o.paymentMethodCode;
+					}
+				});
+
+				// Merge Questions
+				if (!id) {
+					req.ToQuestions = detailModel.getProperty("/questions").map(function (q) {
+						var result = Object.assign({}, q);
+						delete result.complete;
+						delete result.visible;
+						return result;
+					});
+				} else if (!detailModel.getProperty("/changeRequestMode")) {
+
+					detailModel.getProperty("/questions").forEach(function (q) {
+						var questionKey = model.createKey("/Questions", {
+							requestId: id,
+							questionId: q.questionId
+						});
+
+						var question = {
+							requestId: id,
+							questionId: q.questionId,
+							yesNo: q.yesNo,
+							responseText: q.responseText,
+							questionText: q.questionText,
+							responseType: q.responseType,
+							role: q.role,
+							status: q.status
+						};
+
+						model.update(questionKey, question);
+
+					});
+
+				}
+
+				var fnSuccess = function (data) {
+
+					// Ensure that the view is updated with the new req id.
+					if (bUpdateId) {
+						id = data.id;
+						that._sObjectPath = "/" + model.createKey("Requests", {
+							id: data.id
+						});
+						that._bindView(that._sObjectPath);
+					}
+
+					if (bSubmit) {
+						model.resetChanges();
+						MessageBox.success(that.getResourceBundle().getText("msgCreateSuccess", [id]), {
+							title: "Success",
+							onClose: function () {
+								that._navBack();
+							}
+						});
+					} else {
+						MessageToast.show("Request has been saved successfully", {
+							duration: 10000
+						});
+					}
+					that._setBusy(false);
+
+					res();
+				};
+
+				if (bUpdateId) {
+					model.create("/Requests", req, {
+						success: fnSuccess,
+						error: function (error) {
+							MessageBox.error("Error saving request", {
+								title: "An error has occurred"
+							});
+							rej();
+						}
 					});
 				} else {
-					MessageToast.show("Request has been saved successfully", {
-						duration: 10000
+
+					delete req.ToApprovals;
+					delete req.ToQuestions;
+
+					model.update(that._sObjectPath, req, {
+						success: fnSuccess,
+						error: function (error) {
+							MessageBox.error("Error updating request", {
+								title: "An error has occurred"
+							});
+							rej();
+						}
 					});
 				}
-				this._setBusy(false);
 
-				if (fOnSuccess) {
-					fOnSuccess();
-				}
-			}.bind(this);
-
-			if (bUpdateId) {
-				model.create("/Requests", req, {
-					success: fnSuccess,
-					error: function (error) {
-						MessageBox.error("Error saving request", {
-							title: "An error has occurred"
-						});
-					}
-				});
-			} else {
-
-				delete req.ToApprovals;
-				delete req.ToQuestions;
-
-				model.update(this._sObjectPath, req, {
-					success: fnSuccess,
-					error: function (error) {
-						MessageBox.error("Error updating request", {
-							title: "An error has occurred"
-						});
-					}
-				});
-			}
+			});
 
 		},
 
@@ -1019,7 +1027,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the email addresses are valid
 			if (!formatter.validateEmail(req.accountsEmail)) {
 				messages.push(new Message({
@@ -1030,7 +1038,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			if (!formatter.validateEmail(req.purchEmail)) {
 				messages.push(new Message({
 					message: "Purchasing email address is invalid",
@@ -1040,7 +1048,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the phone numbers are valid
 			if (!formatter.validatePhone(req.purchTel)) {
 				messages.push(new Message({
@@ -1051,7 +1059,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Check that the phone numbers are valid
 			if (!formatter.validatePhone(req.accountsTel)) {
 				messages.push(new Message({
@@ -1393,8 +1401,6 @@ sap.ui.define([
 				if (this._oNewBankDialog.close) {
 					this._oNewBankDialog.close();
 				}
-				this._oNewBankDialog.destroy();
-				delete this._oNewBankDialog;
 			}
 		},
 
@@ -1455,7 +1461,7 @@ sap.ui.define([
 		},
 
 		closeQuestionnaireDialog: function (bSilent) {
-			
+
 			var that = this;
 			if (this._oQuestionDialog) {
 				this._oQuestionDialog.close();
@@ -1470,9 +1476,12 @@ sap.ui.define([
 		},
 
 		questionnaireOk: function (event) {
+			var that = this;
 			if (this.validateQuestionnaire()) {
 				this.closeQuestionnaireDialog(true);
-				this._saveReq(false, this.continueSubmissionAfterQuestionnaire.bind(this));
+				this._saveReq(false).then(function () {
+					that.continueSubmissionAfterQuestionnaire();
+				});
 			}
 		},
 
@@ -1794,6 +1803,18 @@ sap.ui.define([
 			});
 		},
 
+		_checkBankVerifyRequired: function () {
+			var that = this;
+			// If bank details are entered, raise the verify dialog
+			return new Promise(function (res, rej) {
+				if (that.getModel("detailView").getProperty("/editBankDetails") && !that.getModel().getProperty("/bankVerifiedWith")) {
+					res();
+				} else {
+					rej();
+				}
+			});
+		},
+
 		_openApproverDialog: function () {
 			if (!this._oApproverDialog) {
 				this._oApproverDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.ApproverListDialog", this);
@@ -1811,8 +1832,8 @@ sap.ui.define([
 					var context = i.getBindingContext();
 
 					if (context.getObject().userSelected) {
-						model.setProperty(that._sObjectPath + "/approver", approver);
-						model.setProperty(that._sObjectPath + "/approverName", approverName);
+						model.setProperty(context.getPath() + "/approver", approver);
+						model.setProperty(context.getPath() + "/approverName", approverName);
 					}
 				});
 			}
@@ -1835,11 +1856,21 @@ sap.ui.define([
 		},
 
 		approversOk: function (event) {
+			var that = this;
 			if (this._oApproverDialog) {
 				this._oApproverDialog.close();
 			}
 
-			this._saveReq(true);
+			var verifyPromise = that._checkBankVerifyRequired();
+
+			verifyPromise.then(function () {
+				// If bank details are entered, raise the verify dialog
+				that._showVerifyBankDialog();
+			});
+
+			verifyPromise.catch(function () {
+				that._saveReq(true);
+			});
 
 		},
 
@@ -1885,12 +1916,13 @@ sap.ui.define([
 		},
 
 		_deleteRequest: function () {
+			var that = this;
 			this.getModel().setProperty(this._sObjectPath + "/deleted", true);
 
-			this._saveReq(false, function () {
+			this._saveReq(false).then(function () {
 				MessageToast.show("The request has been successfully deleted");
-				this.onNavBack();
-			}.bind(this), true);
+				that.onNavBack();
+			});
 		},
 
 		_selectApproverConfirmed: function (event) {
@@ -1943,29 +1975,29 @@ sap.ui.define([
 			model.setProperty("/existingVendorMessage", existingVendorMessage);
 			model.setProperty("/existingVendorMessageType", existingVendorMessageType);
 		},
-		
-		onEmailChange: function(event) {
-			
+
+		onEmailChange: function (event) {
+
 			if (!formatter.validateEmail(event.getParameter("newValue"))) {
 				var valueState = ValueState.Error,
 					valueStateText = "Email address is not valid";
 			} else {
 				valueState = ValueState.None;
 			}
-			
+
 			event.getSource().setValueState(valueState);
 			event.getSource().setValueStateText(valueStateText);
-			
+
 		},
-		
-		checkPhoneNo: function(event) {
+
+		checkPhoneNo: function (event) {
 			if (!formatter.validatePhone(event.getParameter("newValue"))) {
 				var valueState = ValueState.Error,
 					valueStateText = "Enter numbers and spaces only";
 			} else {
 				valueState = ValueState.None;
 			}
-			
+
 			event.getSource().setValueState(valueState);
 			event.getSource().setValueStateText(valueStateText);
 		}

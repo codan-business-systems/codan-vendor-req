@@ -2,7 +2,7 @@
 	<Dialog title="{i18n>verifyBankDetailsTitle}" contentWidth="40rem" id="verifyBankDetailDialog">
 		<content>
 			<MessageStrip text="{i18n>verifyBankDetailsExplain}" id="verifyBankDetailsExplain" showIcon="true" type="Information"/>
-			<f:SimpleForm editable="true" id="addItemForm" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
+			<f:SimpleForm editable="true" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
 				<f:content>
 					<Label id="verifyAccountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"/>
 					<Input id="verifyAccountName" value="{accountName}" editable="{detailView>/editMode}"/>
