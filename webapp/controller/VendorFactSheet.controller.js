@@ -26,6 +26,7 @@ sap.ui.define([
 			helpPopoverTitle: "",
 			helpPopoverText: "",
 			submitAction: "Submit for Approval",
+			submitVisible: true,
 			editBankDetails: false,
 			bankDetailPopup: {
 				bankVerifiedWithMsg: "",
@@ -99,12 +100,16 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched: function (oEvent) {
+
+			var detailModel = this.getModel("detailView");
+
 			this._sVendorId = oEvent.getParameter("arguments").id;
 			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
 
-			this.getModel("detailView").setProperty("/existingVendor", !!this._sVendorId);
-			this.getModel("detailView").setProperty("/editBankDetails", !this._sVendorId);
-			this.getModel("detailView").setProperty("/changeRequestMode", false);
+			detailModel.setProperty("/existingVendor", !!this._sVendorId);
+			detailModel.setProperty("/editBankDetails", !this._sVendorId);
+			detailModel.setProperty("/changeRequestMode", false);
+			detailModel.setProperty("/submitVisible", true);
 
 			// Create a new request but only populate it with the Vendor Details.
 			// The create should populate the vendor details
@@ -152,7 +157,8 @@ sap.ui.define([
 		},
 
 		_onChangeRequestMatched: function (oEvent) {
-			var oStartupParams = oEvent.getParameter("arguments");
+			var oStartupParams = oEvent.getParameter("arguments"),
+				detailModel = this.getModel("detailView");
 
 			if (!oStartupParams || !oStartupParams.id) {
 				return;
@@ -161,9 +167,10 @@ sap.ui.define([
 			this._sCompanyCode = oStartupParams.companyCode;
 			this._setBusy(true);
 
-			this.getModel("detailView").setProperty("/editBankDetails", false);
-			this.getModel("detailView").setProperty("/editMode", true);
-			this.getModel("detailView").setProperty("/changeRequestMode", true);
+			detailModel.setProperty("/editBankDetails", false);
+			detailModel.setProperty("/editMode", true);
+			detailModel.setProperty("/changeRequestMode", true);
+			detailModel.setProperty("/submitVisible", false);
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
@@ -213,6 +220,7 @@ sap.ui.define([
 			detailModel.setProperty("/changeRequestMode", false);
 			detailModel.setProperty("/existingVendorMessage", "");
 			detailModel.setProperty("/existingVendorMessageType", MessageType.None);
+			detailModel.setProperty("/submitVisible", true);
 
 			this._initialisePaymentMethodsAndTerms().then(function () {
 				this._oBindingContext = this.getModel().createEntry("/Requests", {});
@@ -318,6 +326,12 @@ sap.ui.define([
 						var result = data.getParameter ? data.getParameter("data") : data;
 						oViewModel.setProperty("/existingVendor", !!result.vendorId);
 						this._parsePaymentMethods(result);
+						this._resetRegionFilters(result.country);
+
+						if (oViewModel.getProperty("/changeRequestMode") && result.status === "R") {
+							oViewModel.setProperty("/submitVisible", true);
+							oViewModel.setProperty("/submitAction", "Resubmit");
+						}
 					}.bind(this)
 				}
 			});
@@ -345,22 +359,111 @@ sap.ui.define([
 				return;
 			}
 
-			this._setBusy(true);
+			var checkChanges = this._checkSignificantChanges();
 
-			// Show the questionnaire
-			var checkPaymentTerms = this._checkPaymentTermsJustification();
+			checkChanges.then(function () {
 
-			checkPaymentTerms.then(function () {
-				this._openQuestionnaireDialog();
-			}.bind(this));
+				that._setBusy(true);
 
-			checkPaymentTerms.catch(function () {
-				that._setBusy(false);
-				MessageToast.show("Submission Cancelled", {
-					duration: 5000
+				// Show the questionnaire
+				var checkPaymentTerms = that._checkPaymentTermsJustification();
+
+				checkPaymentTerms.then(function () {
+					that._openQuestionnaireDialog();
 				});
+
+				checkPaymentTerms.catch(function () {
+					that._setBusy(false);
+					MessageToast.show("Submission Cancelled", {
+						duration: 5000
+					});
+				});
+
 			});
 
+		},
+
+		_checkSignificantChanges: function () {
+
+			var that = this,
+				model = this.getModel(),
+				detailModel = this.getModel("detailView"),
+				paymentMethods = detailModel.getProperty("/paymentMethods").filter(function (p) {
+					return p.paymentMethodActive;
+				}),
+				generalFields = [
+					"paymentMethods",
+				],
+				eftFields = [
+					"bankBranch",
+					"bankRegion",
+					"bankStreet",
+					"bankCity",
+					"bankSwiftCode",
+					"accountCountry",
+					"accountName",
+					"accountBankKey",
+					"accountNumber",
+					"accountIban",
+					"bankName"
+				],
+				chequeFields = [
+					"street2",
+					"street",
+					"houseNo",
+					"city",
+					"region",
+					"postcode",
+					"poBox",
+					"poBoxCity",
+					"poBoxRegion",
+					"poBoxPostcode"
+				],
+				allFields = [];
+
+			return new Promise(function (res, rej) {
+				if (!detailModel.getProperty("/changeRequestMode")) {
+					res();
+					return;
+				}
+
+				var change = model.mChangedEntities[that._sObjectPath.substring(1)];
+
+				if (!change) {
+					res();
+				}
+
+				detailModel.setProperty("/significantChange", false);
+
+				allFields = allFields.concat(generalFields);
+
+				if (paymentMethods.some(function (o) {
+						return o.bankDetailsReqdFlag;
+					})) {
+					allFields = allFields.concat(eftFields);
+				}
+
+				if (paymentMethods.some(function (o) {
+						return o.addressReqdFlag || o.paymentMethodCode === "C";
+					})) {
+					allFields = allFields.concat(chequeFields);
+				}
+
+				if (allFields.some(function (f) {
+						return change.hasOwnProperty(f);
+					})) {
+					MessageBox.confirm("This action will reset the approval flow.\n\nDo you wish to continue?", {
+						onClose: function (sAction) {
+							detailModel.setProperty("/significantChange", true);
+							sAction === "OK" ? res() : rej();
+						}
+					});
+					return;
+				}
+
+				res();
+
+			});
 		},
 
 		continueSubmissionAfterQuestionnaire: function () {
@@ -799,13 +902,21 @@ sap.ui.define([
 					return;
 				}
 
-				if (bSubmit) {
-					if (req.id) {
-						req.status = "N";
-					} else {
-						model.setProperty(this._sObjectPath + "/status", "N");
+				if (detailModel.getProperty("/changeRequestMode")) {
+					if (detailModel.getProperty("/significantChange")) {
 						req.status = "N";
 					}
+				} else {
+
+					if (bSubmit) {
+						if (req.id) {
+							req.status = "N";
+						} else {
+							model.setProperty(this._sObjectPath + "/status", "N");
+							req.status = "N";
+						}
+					}
+
 				}
 
 				that._setBusy(true);
@@ -864,7 +975,9 @@ sap.ui.define([
 
 					if (bSubmit) {
 						model.resetChanges();
-						MessageBox.success(that.getResourceBundle().getText("msgCreateSuccess", [id]), {
+						var successMessage = detailModel.getProperty("/changeRequestMode") ? "The request has been resubmitted for approval" :
+											 that.getResourceBundle().getText("msgCreateSuccess", [id]);
+						MessageBox.success(successMessage, {
 							title: "Success",
 							onClose: function () {
 								that._navBack();
@@ -951,6 +1064,7 @@ sap.ui.define([
 			var messages = [];
 			var req = this.getModel().getProperty(this._sObjectPath);
 			var that = this;
+
 			this.oMessageManager.removeAllMessages();
 			var mandatoryFields = [{
 				name: "name1",

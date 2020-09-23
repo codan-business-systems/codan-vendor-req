@@ -239,7 +239,7 @@
 								enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/bankDetailsLocked} }" change="editBankDetailsChange"/>
 							<Label id="accountNameLabel" text="{i18n>lblAccountName}" labelFor="accountName"
 								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
-							<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}"/>
+							<Input id="accountName" value="{accountName}" editable="{detailView>/editBankDetails}" maxLength="60"/>
 							<Label id="bankCountryLabel" text="{i18n>lblBankCountry}" labelFor="bankCountry"
 								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 							<ComboBox id="bankCountry" enabled="{detailView>/editBankDetails}" selectedKey="{accountCountry}" change="onBankCountryChange"
@@ -255,14 +255,14 @@
 							<Label id="bankSwiftKeyLabel" text="Swift Key" labelFor="bankSwiftKey"
 								visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" required="true"/>
 							<Input id="bankSwiftKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }"
-								visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" value="{bankSwiftCode}"/>
+								visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }" value="{bankSwiftCode}" maxLength="11"/>
 							<Label id="accountNumberLabel" text="{i18n>lblAccountNo}" labelFor="accountNumber"
 								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 							<Input id="accountNumber" value="{accountNumber}" editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"
-								change="checkDuplicateBank"/>
+								change="checkDuplicateBank" maxLength="18"/>
 							<Label id="accountIbanLabel" text="IBAN" labelFor="accountIban" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"/>
 							<Input id="accountIban" value="{accountIban}" visible="{= !!${accountCountry} &amp;&amp; ${accountCountry} !== 'AU' }"
-								editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }"/>
+								editable="{= ${detailView>/editMode} &amp;&amp; !!${accountCountry} }" maxLength="34"/>
 						</f:content>
 					</f:SimpleForm>
 				</Panel>
@@ -316,7 +316,7 @@
 			<semantic:SaveAction press="onSave" visible="{detailView>/editMode}"/>
 		</semantic:saveAction>
 		<semantic:customFooterContent>
-			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{= ${detailView>/editMode} &amp;&amp; !${status}}"
+			<Button text="{detailView>/submitAction}" press="onSubmit" type="Emphasized" visible="{= ${detailView>/editMode} &amp;&amp; ${detailView>/submitVisible}}"
 					enabled="{= !${detailView>/busy} }"/>
 		</semantic:customFooterContent>
 		<semantic:messagesIndicator>
