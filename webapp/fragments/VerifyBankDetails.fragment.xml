@@ -34,7 +34,7 @@
 												valueStateText="{detailView>/bankDetailPopup/bankVerifiedWithMsg}"
 					/>
 					<Label id="bankVerifiedTelLabel" text="{i18n>bankVerifiedTelLabel}" labelFor="bankVerifiedTel" required="true"/>
-					<Input id="bankVerifiedTel" value="{bankVerifiedTel}"
+					<Input id="bankVerifiedTel" value="{bankVerifiedTel}" maxLength="40"
 							valueState="{= !${detailView>/bankDetailPopup/bankVerifiedTelMsg} ? 'None' : 'Error' }"
 							valueStateText="{detailView>/bankDetailPopup/bankVerifiedTelMsg}"/>
 				</f:content>
