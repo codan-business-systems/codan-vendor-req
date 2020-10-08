@@ -6,6 +6,8 @@
 			
 			<f:SimpleForm editable="true" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" backgroundDesign="Transparent">
 				<f:content>
+					<Label id="bankKeyLabel" labelFor="branch" text="{i18n>lblBankKey}"/>
+					<Text  id="branch" text="{accountBankKey}"/>
 					<Label id="bankNameLabel" required="true" labelFor="bankName" text="Bank Name"/>
 					<Input id="bankName" maxLength="60" value="{bankName}"/>
 					<Label id="branchNameLabel" labelFor="branchName" text="Branch Name"/>
