@@ -328,9 +328,11 @@ sap.ui.define([
 						this._parsePaymentMethods(result);
 						this._resetRegionFilters(result.country);
 
-						if (oViewModel.getProperty("/changeRequestMode") && result.status === "R") {
-							oViewModel.setProperty("/submitVisible", true);
-							oViewModel.setProperty("/submitAction", "Resubmit");
+						if (oViewModel.getProperty("/changeRequestMode")) {
+							if (result.status === "R" || !result.status) {
+								oViewModel.setProperty("/submitVisible", true);
+								oViewModel.setProperty("/submitAction", result.status === "R" ? "Resubmit" : "Submit");
+							}
 						}
 					}.bind(this)
 				}
