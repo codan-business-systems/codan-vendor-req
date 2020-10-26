@@ -905,7 +905,7 @@ sap.ui.define([
 				}
 
 				if (detailModel.getProperty("/changeRequestMode")) {
-					if (detailModel.getProperty("/significantChange")) {
+					if (detailModel.getProperty("/significantChange") || (!req.status && bSubmit)) {
 						req.status = "N";
 					}
 				} else {
@@ -1126,13 +1126,38 @@ sap.ui.define([
 			if (req.country === "AU" && !req.abn && req.vendorType !== "E") {
 				messages.push(new Message({
 					message: "ABN is mandatory for AU companies",
-					description: "Enter the ABN/Tax Number of the vendor",
+					description: "Enter the ABN of the vendor",
 					type: MessageType.Error,
 					target: this._sObjectPath + "/abn",
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-
+			
+			// Tax number mandatory for US companies in 4300
+			if (req.companyCode === "4300" && req.vendorType !== "E" && !req.abn) {
+				messages.push(new Message({
+					message: "Tax Number is mandatory for US companies",
+					description: "Enter the Tax Number of the vendor",
+					type: MessageType.Error,
+					target: this._sObjectPath + "/abn",
+					processor: this.getOwnerComponent().getModel()
+				}));
+			}
+			
+			// Company Structure mandatory for US companies in 4300.
+			var compStruct = this.getView().byId("companyStructure");
+			if (compStruct && compStruct.getVisible()) {
+				if (!req.existingVendor && (!req.companyStructureCode || Number(req.companyStructureCode) >= 90)) {
+					messages.push(new Message({
+						message: "Company Structure selection required" + req.country,
+						description: "Select company structure from W-9 form",
+						type: MessageType.Error,
+						target: this._sObjectPath + "/companyStructureCode",
+						processor: this.getOwnerComponent().getModel()
+					}));			
+				}
+			}
+			
 			// Check that the postcode is valid
 			if (req.postcode && !postcodeValidator.validatePostcode(this.getModel("countries"), req.country, req.postcode)) {
 				messages.push(new Message({
@@ -2069,6 +2094,19 @@ sap.ui.define([
 
 		cancelPaymentTermsDialog: function (event) {
 			this.closePaymentTermsDialog();
+		},
+		
+		companyStructureChange: function(event) {
+			var selectedItem = event.getParameter("selectedItem"),
+				withholdingCode = selectedItem.getBindingContext().getObject().filterValue2,
+				rentRelated = this.getView().byId("rentRelated");
+				
+			rentRelated.setEnabled(!!withholdingCode);
+			
+			if (!withholdingCode) {
+				this.getModel().setProperty(this._sObjectPath + "/rentRelated", false);	
+			}
+			
 		},
 
 		_setExistingVendorMessage: function (data) {

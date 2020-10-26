@@ -97,6 +97,10 @@ sap.ui.define([
 			}
 			
 			return !phone.match(phoneRegex);
+		},
+		
+		taxNumberMandatory: function(editMode, companyCode, country) {
+			return (editMode && (country === "AU" || (companyCode = "4300" && country === "US")));
 		}
 	};
 

@@ -50,13 +50,29 @@
 								<!--<Label id="searchTermLabel" text="{i18n>lblSearchTerm}" labelFor="searchTerm" required="{detailView>/editMode}"/>
 								<Input id="searchTerm" value="{searchTerm}" editable="{detailView>/editMode}" maxLength="10"/>-->
 								<Label id="abnLabel" text="{= ${country} === 'AU' ? ${i18n>lblABN} : 'Tax Number'}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
-									required="{= ${detailView>/editMode} &amp;&amp; ${country} === 'AU' }"/>
+									required="{ parts: [ 'detailView>/editMode', 'companyCode', 'country' ], formatter: '.formatter.taxNumberMandatory' }"
+									/>
 								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
 								<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }"/>
-								<Label id="filler1" labelFor="filler1Dummy"/>
+								<Label id="companyStructureLabel" labelFor="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
+									   required="true" text="Company Structure"/>
+								<Select id="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
+									selectedKey="{companyStructureCode}" change="companyStructureChange"
+									items="{path: '/ValueHelpResults', filters: 
+										[ { path: 'property', operator: 'EQ', value1: 'companyStructure' },
+										  { path: 'filterValue', operator: 'EQ', value1: 'US' }
+										] }">
+										<core:Item text="{value}" key="{key}"/>
+								</Select>
+								<Label id="rentRelatedLabel" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
+										text="Is this related to rent?" labelFor="rentRelated"/>
+								<Switch id="rentRelated" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
+										state="{rentRelated}" enabled="false" customTextOn="Yes" customTextOff="No"/>
+								
+								<!--<Label id="filler1" labelFor="filler1Dummy"/>
 								<Input id="filler1Dummy" editable="false"/>
 								<Label id="filler2" labelFor="filler2Dummy" visible="{= ${vendorType} === 'E'}"/>
-								<Input id="filler2Dummy" editable="false" visible="{= ${vendorType} === 'E'}"/>
+								<Input id="filler2Dummy" editable="false" visible="{= ${vendorType} === 'E'}"/>-->
 							</f:content>
 						</f:SimpleForm>
 					</Panel>
@@ -246,7 +262,7 @@
 								items="{path: 'countries>/', sorter: { path: 'name' } }">
 								<core:Item text="{countries>name}" key="{countries>key}"/>
 							</ComboBox>
-							<Label id="bankKeyLabel" text="{i18n>lblBankKey}" labelFor="bankKey"
+							<Label id="bankKeyLabel" text="{= ${accountCountry} === 'AU' ? ${i18n>lblBankKey} : 'Bank Key' }" labelFor="bankKey"
 								required="{= ${detailView>/editMode} &amp;&amp; ${detailView>/editBankDetails} }"/>
 							<Input id="bankKey" enabled="{= ${detailView>/editBankDetails} &amp;&amp; !!${accountCountry} }" showSuggestion="true"
 								suggestionItems="{detailView>/banks}" change="checkAccountKey" value="{accountBankKey}">
