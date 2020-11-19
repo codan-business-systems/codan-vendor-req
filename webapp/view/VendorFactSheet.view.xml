@@ -39,9 +39,9 @@
 								<Switch id="employeeSwitch" state="{= ${vendorType} === 'E'}"
 									enabled="{= ${detailView>/editMode} &amp;&amp; !${detailView>/existingVendor} }" change="employeeTypeChange"/>
 								<Label id="name1Label" text="{i18n>lblName1}" labelFor="name1" required="{detailView>/editMode}"/>
-								<Input id="name1" value="{name1}" editable="{detailView>/editMode}" change="checkDuplicateName"/>
+								<Input id="name1" value="{name1}" editable="{detailView>/editMode}" change="checkDuplicateName" maxLength="35"/>
 								<Label id="name12Label" text="{i18n>lblName2}" labelFor="name2"/>
-								<Input id="name2" value="{name2}" editable="{detailView>/editMode}"/>
+								<Input id="name2" value="{name2}" editable="{detailView>/editMode}" maxLength="35"/>
 								<Label id="countryLabel" text="{i18n>lblCountry}" labelFor="country" required="{detailView>/editMode}"/>
 								<ComboBox id="country" enabled="{detailView>/editMode}" selectedKey="{country}" items="{path: 'countries>/', sorter: { path: 'name' } }"
 									change="countryChange">
@@ -53,7 +53,7 @@
 									required="{ parts: [ 'detailView>/editMode', 'companyCode', 'country' ], formatter: '.formatter.taxNumberMandatory' }"
 									/>
 								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
-								<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }"/>
+								<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }" maxLength="20"/>
 								<Label id="companyStructureLabel" labelFor="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
 									   required="true" text="Company Structure"/>
 								<Select id="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
