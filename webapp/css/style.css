@@ -54,7 +54,7 @@
 }
 
 .zEqualHeightFlexBox>.sapMFlexItem {
-	flex: 1;
+	flex: 1 !important;
 }
 .zEqualHeightPanel>.sapMPanelContent {
 	height: 100% !important;
