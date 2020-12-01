@@ -52,8 +52,10 @@
 								<Label id="abnLabel" text="{= ${country} === 'AU' ? ${i18n>lblABN} : 'Tax Number'}" labelFor="abn" visible="{= ${vendorType} !== 'E'}"
 									required="{ parts: [ 'detailView>/editMode', 'companyCode', 'country' ], formatter: '.formatter.taxNumberMandatory' }"
 									/>
-								<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
-								<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }" maxLength="20"/>
+								<VBox>
+									<codan:AbnInput id="abn" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} === 'AU' }" change="checkDuplicateAbn"/>
+									<Input id="taxNumber" value="{abn}" editable="{detailView>/editMode}" visible="{= ${vendorType} !== 'E' &amp;&amp; ${country} !== 'AU' }" maxLength="20"/>
+								</VBox>
 								<Label id="companyStructureLabel" labelFor="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
 									   required="true" text="Company Structure"/>
 								<Select id="companyStructure" visible="{= ${vendorType} !== 'E' &amp;&amp; ${companyCode} === '4300' &amp;&amp; ${country} === 'US' }"
