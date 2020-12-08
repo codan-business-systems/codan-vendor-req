@@ -1,3 +1,5 @@
+jQuery.sap.registerModulePath("factsheet.vendor.codan", "/sap/bc/ui5_ui5/sap/z_ven_req_fact");
+
 sap.ui.define([
 	"req/vendor/codan/controller/BaseController",
 	"sap/ui/model/json/JSONModel",
@@ -17,44 +19,8 @@ sap.ui.define([
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
-
-		oDefault: {
-			busy: false,
-			editMode: false,
-			existingVendor: false,
-			orgAssignments: [],
-			helpPopoverTitle: "",
-			helpPopoverText: "",
-			submitAction: "Submit for Approval",
-			submitVisible: true,
-			editBankDetails: false,
-			bankDetailPopup: {
-				bankVerifiedWithMsg: "",
-				bankVerifiedTelMsg: ""
-			},
-			paymentMethods: [],
-			paymentTerms: [],
-			allPaymentTerms: [],
-			bankDetailsLocked: false,
-			banks: [],
-			attachmentRequirements: [],
-			allAttachmentRequirements: [],
-			questions: [],
-			allQuestions: [],
-			attachmentsRequired: false,
-			changeRequestMode: false,
-			existingVendorMessage: "",
-			existingVendorMessageType: MessageType.None
-		},
-
-		oMessageManager: {},
-
-		formatter: formatter,
-
-		_oQuestionExplainTextPopover: undefined,
-		_oPaymentTermsJustificationDialog: undefined,
-		_oNewBankDialog: undefined,
-		_oBankDialog: undefined,
+		
+		_oFactSheetComponent: undefined,
 
 		/**
 		 * Called when the worklist controller is instantiated, sets initial
@@ -62,35 +28,55 @@ sap.ui.define([
 		 * @public
 		 */
 		onInit: function () {
-			var oViewModel;
 
 			// Call the BaseController's onInit method (in particular to initialise the extra JSON models)
 			BaseController.prototype.onInit.apply(this, arguments);
-
-			// Model used to manipulate control states
-			oViewModel = new JSONModel(this.oDefault);
-
-			this.setModel(oViewModel, "detailView");
+			
+			this._oViewModel = new JSONModel({
+				busy: false,
+				delay: 0,
+				existingVendor: false
+			});
+			
+			this.setModel(this._oViewModel, "detailView");
 
 			this.getRouter().getRoute("vendorFactSheet").attachPatternMatched(this._onObjectMatched, this);
 			this.getRouter().getRoute("changeRequest").attachPatternMatched(this._onChangeRequestMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
-
-			// Initialise the message manager
-			this.oMessageManager = sap.ui.getCore().getMessageManager();
-			this.setModel(this.oMessageManager.getMessageModel(), "message");
-
-			this.oMessageManager.registerObject(this.getView(), true);
-
-			this.getOwnerComponent().getModel("regions").setSizeLimit(9999);
-			this.getOwnerComponent().getModel("countries").setSizeLimit(9999);
-			this.getOwnerComponent().getModel().setSizeLimit(9999);
-
-			this._oQuestionExplainTextPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.QuestionExplainTextPopover", this);
-			this.getView().addDependent(this._oQuestionExplainTextPopover);
-
-			this._oPaymentTermsJustificationDialog = sap.ui.xmlfragment("req.vendor.codan.fragments.PaymentTermsJustificationDialog", this);
-			this.getView().addDependent(this._oPaymentTermsJustificationDialog);
+			
+		},
+		
+		_initialiseFactSheetComponent: function(oSettings) {
+			sap.ui.component({
+				name: "factsheet.req.vendor.codan",
+				settings: oSettings,
+				async: true,
+				manifestFirst : true  //deprecated from 1.49+
+				// manifest : true    //SAPUI5 >= 1.49
+			}).then(function(oComponent){
+				this._oFactSheetComponent = oComponent;
+				this.byId("componentFactSheet").setComponent(this._oFactSheetComponent);
+			}.bind(this)).catch(function(oError) {
+				jQuery.sap.log.error(oError);
+			});
+		},
+		
+		_setupFactSheetComponent: function(oSettings) {
+			var that = this;
+			if (!this._oFactSheetComponent) {
+				this._initialiseFactSheetComponent(oSettings);
+			} else {
+				for (var prop in oSettings) {
+					if (oSettings.hasOwnProperty(prop)) {
+						var setter = "set" + prop.charAt(0).toUpperCase + prop.slice(1);
+						this._oFactSheetComponent[setter](oSettings[prop]);
+					}
+				}
+			}
+			
+			this._oFactSheetComponent.loadData().then(function() {
+				that._bindView(that._oFactSheetComponent.getObjectPath());
+			});
 		},
 
 		/**
@@ -100,105 +86,40 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched: function (oEvent) {
-
-			var detailModel = this.getModel("detailView");
-
+			
 			this._sVendorId = oEvent.getParameter("arguments").id;
 			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
-
-			detailModel.setProperty("/existingVendor", !!this._sVendorId);
-			detailModel.setProperty("/editBankDetails", !this._sVendorId);
-			detailModel.setProperty("/changeRequestMode", false);
-			detailModel.setProperty("/submitVisible", true);
-
-			// Create a new request but only populate it with the Vendor Details.
-			// The create should populate the vendor details
-			// A request ID will only be assigned when the edit is made and a save is done
-			this._setBusy(true);
-			this._initialisePaymentMethodsAndTerms().then(function () {
-				this.getModel().create("/Requests", {
-					vendorId: this._sVendorId,
-					companyCode: this._sCompanyCode
-				}, {
-					success: function (data) {
-						this._sObjectPath = "/Requests('" + data.id + "')";
-
-						if (this._sVendorId) {
-							this._setExistingVendorMessage(data);
-						}
-
-						this._readQuestions();
-						this._resetAttachmentRequirements(this._sCompanyCode);
-						this._parsePaymentMethods(data);
-						this._resetRegionFilters(data.country);
-						this._checkCurrentPaymentMethod(data.paymentTermsKey);
-
-						this._bindView(this._sObjectPath);
-						this._setBusy(false);
-
-					}.bind(this)
-				});
-
-			}.bind(this));
-
-			// Reset the edit mode
-			this.getModel("detailView").setProperty("/editMode", false);
-
-		},
-
-		countryChange: function (oEvent) {
-			var country = typeof oEvent === "string" ? oEvent : oEvent.getSource().getSelectedKey();
-			this._resetRegionFilters(country);
-		},
-
-		_resetRegionFilters: function (sCountry) {
-			this.setRegionFilter(this.getView().byId("region"), sCountry);
-			this.setRegionFilter(this.getView().byId("poBoxRegion"), sCountry);
+			
+			this._setupFactSheetComponent({
+				vendorId: this._sVendorId,
+				companyCode: this._sCompanyCode,
+				existingVendor: !!this._sVendorId,
+				editBankDetails: !this._sVendorId,
+				changeRequestMode: false,
+				submitVisible: true,
+				editable: false
+			});
 		},
 
 		_onChangeRequestMatched: function (oEvent) {
-			var oStartupParams = oEvent.getParameter("arguments"),
-				detailModel = this.getModel("detailView");
+			var oStartupParams = oEvent.getParameter("arguments");
 
 			if (!oStartupParams || !oStartupParams.id) {
 				return;
 			}
+			
 			this._sRequestId = oStartupParams.id;
 			this._sCompanyCode = oStartupParams.companyCode;
-			this._setBusy(true);
-
-			detailModel.setProperty("/editBankDetails", false);
-			detailModel.setProperty("/editMode", true);
-			detailModel.setProperty("/changeRequestMode", true);
-			detailModel.setProperty("/submitVisible", false);
-
-			this._initialisePaymentMethodsAndTerms().then(function () {
-				this._sObjectPath = "/" + this.getOwnerComponent().getModel().createKey("Requests", {
-					id: this._sRequestId
-				});
-
-				this._resetAttachmentRequirements(this._sCompanyCode);
-				this._readQuestions();
-				this._bindView(this._sObjectPath);
-			}.bind(this));
-
-		},
-
-		_parsePaymentMethods: function (data) {
-
-			var oDetailModel = this.getModel("detailView"),
-				aPaymentMethods = oDetailModel.getProperty("/paymentMethods");
-			aPaymentMethods = aPaymentMethods.map(function (o) {
-				o.paymentMethodActive = !!data.paymentMethods && data.paymentMethods.indexOf(o.paymentMethodCode) >= 0;
-				return o;
+			
+			this._setupFactSheetComponent({
+				requestId: this._sRequestId,
+				vendorId: "",
+				companyCode: this._sCompanyCode,
+				editable: true,
+				editBankDetails: false,
+				changeRequestMode: true,
+				submitVisible: false
 			});
-			oDetailModel.setProperty("/paymentMethods", aPaymentMethods);
-
-			// Bank details are present, set the modify bank details switch to on
-			if (data.accountBankKey) {
-				oDetailModel.setProperty("/editBankDetails", true);
-				this.setCurrentAttachmentRequirements();
-			}
 
 		},
 
@@ -212,89 +133,17 @@ sap.ui.define([
 
 			var detailModel = this.getModel("detailView");
 			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
+			
+			this._setupFactSheetComponent({
+				companyCode: this._sCompanyCode,
+				editable: true,
+				editBankDetails: false,
+				changeRequestMode: false,
+				submitVisible: true,
+				vendorId: "",
+				requestId: ""
+			});
 
-			detailModel.setProperty("/existingVendor", false);
-			detailModel.setProperty("/editBankDetails", false);
-			detailModel.setProperty("/bankDetailsLocked", false);
-			detailModel.setProperty("/editMode", true);
-			detailModel.setProperty("/changeRequestMode", false);
-			detailModel.setProperty("/existingVendorMessage", "");
-			detailModel.setProperty("/existingVendorMessageType", MessageType.None);
-			detailModel.setProperty("/submitVisible", true);
-
-			this._initialisePaymentMethodsAndTerms().then(function () {
-				this._oBindingContext = this.getModel().createEntry("/Requests", {});
-				this._sObjectPath = this._oBindingContext.getPath();
-				this._readQuestions();
-				this._resetAttachmentRequirements(this._sCompanyCode);
-
-				this._bindView(this._sObjectPath);
-
-				this.getModel().setProperty(this._sObjectPath + "/companyCode", this._sCompanyCode);
-				this.getModel().setProperty(this._sObjectPath + "/paymentTerms", "Z008");
-				this.getModel().setProperty(this._sObjectPath + "/paymentTermsText", "Default");
-				this.getModel().setProperty(this._sObjectPath + "/country", "AU");
-				this.countryChange("AU");
-			}.bind(this));
-
-		},
-
-		showBankDetailsHelp: function (event) {
-			if (!this._oHelpPopover) {
-				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
-				this.getView().addDependent(this.oHelpPopover);
-			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("bankDetailsHelpTitle");
-
-			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
-			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("bankDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
-
-		},
-
-		showPurchaseContactDetailsHelp: function (event) {
-			if (!this._oHelpPopover) {
-				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
-				this.getView().addDependent(this.oHelpPopover);
-			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("purchaseContactDetailsHelpTitle");
-
-			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
-			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("purchaseContactDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
-		},
-
-		showAccountContactDetailsHelp: function (event) {
-			if (!this._oHelpPopover) {
-				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
-				this.getView().addDependent(this.oHelpPopover);
-			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("accountContactDetailsHelpTitle");
-
-			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
-			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("accountContactDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
 		},
 
 		/**
@@ -324,148 +173,19 @@ sap.ui.define([
 
 						oViewModel.setProperty("/busy", false);
 						var result = data.getParameter ? data.getParameter("data") : data;
+						
 						oViewModel.setProperty("/existingVendor", !!result.vendorId);
-						this._parsePaymentMethods(result);
-						this._resetRegionFilters(result.country);
 
-						if (oViewModel.getProperty("/changeRequestMode")) {
-							if (result.status === "R" || !result.status) {
-								oViewModel.setProperty("/submitVisible", true);
-								oViewModel.setProperty("/submitAction", result.status === "R" ? "Resubmit" : "Submit");
-							}
-						}
 					}.bind(this)
 				}
 			});
-
-			var paymentTerms = this.getView().byId("paymentTerms");
-			if (paymentTerms && paymentTerms.setValueState) {
-				paymentTerms.setValueState(ValueState.None);
-			}
-
-			var bankKey = this.getView().byId("bankKey");
-			if (bankKey && bankKey.setValueState) {
-				bankKey.setValueState(ValueState.None);
-			}
-
-			oViewModel.setProperty("/bankDetailsLocked", false);
 
 		},
 
 		onSubmit: function () {
 
-			var that = this;
+			this._oFactSheetComponent.submit();
 
-			if (!this._validateReq()) {
-				this.displayMessagesPopover();
-				return;
-			}
-
-			var checkChanges = this._checkSignificantChanges();
-
-			checkChanges.then(function () {
-
-				that._setBusy(true);
-
-				// Show the questionnaire
-				var checkPaymentTerms = that._checkPaymentTermsJustification();
-
-				checkPaymentTerms.then(function () {
-					that._openQuestionnaireDialog();
-				});
-
-				checkPaymentTerms.catch(function () {
-					that._setBusy(false);
-					MessageToast.show("Submission Cancelled", {
-						duration: 5000
-					});
-				});
-
-			});
-
-		},
-
-		_checkSignificantChanges: function () {
-
-			var that = this,
-				model = this.getModel(),
-				detailModel = this.getModel("detailView"),
-				paymentMethods = detailModel.getProperty("/paymentMethods").filter(function (p) {
-					return p.paymentMethodActive;
-				}),
-				generalFields = [
-					"paymentMethods",
-				],
-				eftFields = [
-					"bankBranch",
-					"bankRegion",
-					"bankStreet",
-					"bankCity",
-					"bankSwiftCode",
-					"accountCountry",
-					"accountName",
-					"accountBankKey",
-					"accountNumber",
-					"accountIban",
-					"bankName"
-				],
-				chequeFields = [
-					"street2",
-					"street",
-					"houseNo",
-					"city",
-					"region",
-					"postcode",
-					"poBox",
-					"poBoxCity",
-					"poBoxRegion",
-					"poBoxPostcode"
-				],
-				allFields = [];
-
-			return new Promise(function (res, rej) {
-				if (!detailModel.getProperty("/changeRequestMode")) {
-					res();
-					return;
-				}
-
-				var change = model.mChangedEntities[that._sObjectPath.substring(1)];
-
-				if (!change) {
-					res();
-				}
-
-				detailModel.setProperty("/significantChange", false);
-
-				allFields = allFields.concat(generalFields);
-
-				if (paymentMethods.some(function (o) {
-						return o.bankDetailsReqdFlag;
-					})) {
-					allFields = allFields.concat(eftFields);
-				}
-
-				if (paymentMethods.some(function (o) {
-						return o.addressReqdFlag || o.paymentMethodCode === "C";
-					})) {
-					allFields = allFields.concat(chequeFields);
-				}
-
-				if (allFields.some(function (f) {
-						return change.hasOwnProperty(f);
-					})) {
-					MessageBox.confirm("This action will reset the approval flow.\n\nDo you wish to continue?", {
-						onClose: function (sAction) {
-							detailModel.setProperty("/significantChange", true);
-							sAction === "OK" ? res() : rej();
-						}
-					});
-					return;
-				}
-
-				res();
-
-			});
 		},
 
 		continueSubmissionAfterQuestionnaire: function () {
@@ -870,10 +590,6 @@ sap.ui.define([
 			// Everything went fine.
 			oViewModel.setProperty("/busy", false);
 
-		},
-
-		_setBusy: function (busy) {
-			this.getModel("detailView").setProperty("/busy", busy);
 		},
 
 		_showVerifyBankDialog: function () {
@@ -1386,88 +1102,6 @@ sap.ui.define([
 			}
 		},
 
-		_initialisePaymentMethodsAndTerms: function () {
-			var that = this,
-				model = this.getOwnerComponent().getModel(),
-				detailModel = this.getModel("detailView");
-
-			return Promise.all([
-				/* Read Payment Methods */
-				new Promise(function (resolve, reject) {
-					model.metadataLoaded().then(function () {
-						var paymentMethods = detailModel.getProperty("/paymentMethods");
-						if (paymentMethods.length > 0) {
-							paymentMethods.forEach(function (o) {
-								o.paymentMethodActive = false;
-							});
-							resolve();
-							return;
-						}
-
-						model.read("/PaymentMethods", {
-							filters: [
-								new Filter({
-									path: "companyCode",
-									operator: "EQ",
-									value1: that._sCompanyCode
-								})
-							],
-							success: function (data) {
-								var aPaymentMethods = data.results.map(function (o) {
-									return {
-										paymentMethodCode: o.paymentMethodCode,
-										paymentMethodText: o.paymentMethodText,
-										bankDetailsReqdFlag: o.bankDetailsReqdFlag,
-										addressReqdFlag: o.addressReqdFlag,
-										paymentMethodActive: false
-									};
-								});
-								detailModel.setProperty("/paymentMethods", aPaymentMethods);
-								resolve();
-							},
-							error: reject
-						});
-					});
-				}),
-				/* Read Payment Terms */
-				new Promise(function (resolve, reject) {
-					model.metadataLoaded().then(function () {
-						var paymentTerms = detailModel.getProperty("/allPaymentTerms"),
-
-							mapPaymentTerms = function () {
-								detailModel.setProperty("/paymentTerms", paymentTerms.filter(function (p) {
-									return p.selectable;
-								}));
-							};
-
-						if (paymentTerms.length > 0) {
-							mapPaymentTerms();
-							resolve();
-							return;
-						}
-
-						model.read("/PaymentTerms", {
-							success: function (data) {
-								paymentTerms = data.results.map(function (o) {
-									return {
-										paymentTermsKey: o.paymentTermsKey,
-										paymentTermsText: o.paymentTermsText,
-										selectable: o.selectable,
-										warning: o.warning
-									};
-								});
-								detailModel.setProperty("/allPaymentTerms", paymentTerms);
-								mapPaymentTerms();
-								resolve();
-							},
-							error: reject
-						});
-					});
-				})
-
-			]);
-		},
-
 		_checkPaymentTermsJustification: function () {
 
 			var that = this;
@@ -1686,81 +1320,13 @@ sap.ui.define([
 				"newValue"));
 		},
 
-		_readQuestions: function () {
-			var detailModel = this.getModel("detailView"),
-				model = this.getModel();
-
-			detailModel.setProperty("/allQuestions", []);
-			detailModel.setProperty("/questions", []);
-
-			model.read(this._sObjectPath + "/ToQuestions", {
-				success: function (data) {
-					var questions = data.results.map(function (q) {
-						return Object.assign({}, q);
-					});
-
-					detailModel.setProperty("/allQuestions", questions);
-				}
-			});
-		},
-
-		_resetAttachmentRequirements: function (sCompCode) {
-
-			var detailModel = this.getModel("detailView"),
-				model = this.getModel(),
-				that = this;
-
-			detailModel.setProperty("/allAttachmentRequirements", []);
-
-			model.read("/AttachmentRequirements", {
-				filters: [
-					new Filter({
-						path: "compCode",
-						operator: FilterOperator.EQ,
-						value1: sCompCode
-					})
-				],
-				success: function (data) {
-					var attachmentRequirements = data.results;
-					detailModel.setProperty("/allAttachmentRequirements", attachmentRequirements);
-					that.setCurrentAttachmentRequirements();
-
-				},
-				error: function (err) {
-					MessageBox.error("Error retrieving attachment requirements", {
-						title: "An error has occurred"
-					});
-				}
-			});
-		},
-
-		setCurrentAttachmentRequirements: function () {
-			var detailModel = this.getModel("detailView"),
-				allRequirements = detailModel.getProperty("/allAttachmentRequirements"),
-				existingVendor = detailModel.getProperty("/existingVendor"),
-				editBankDetails = detailModel.getProperty("/editBankDetails"),
-				changeRequestMode = detailModel.getProperty("/changeRequestMode"),
-				attachmentRequirements = allRequirements.filter(function (o) {
-					return (!existingVendor && o.newRequest) ||
-						(editBankDetails && o.bankChange) ||
-						(existingVendor && o.otherChange);
-				})
-				.map(function (o) {
-					return Object.assign({
-						complete: changeRequestMode
-					}, o);
-				});
-
-			detailModel.setProperty("/attachmentRequirements", attachmentRequirements);
-			detailModel.setProperty("/attachmentsRequired", attachmentRequirements.length > 0);
-		},
 
 		setCurrentQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				allQuestions = detailModel.getProperty("/allQuestions"),
 				existingVendor = detailModel.getProperty("/existingVendor"),
 				editBankDetails = detailModel.getProperty("/editBankDetails"),
-				questions = detailModel.getProperty("/questions"),
+				questions = detailModel.getProperty("/questions");
 
 				allQuestions = allQuestions.filter(function (o) {
 					return (!existingVendor && o.newRequest) ||
@@ -1908,25 +1474,6 @@ sap.ui.define([
 					});
 				}
 			});
-		},
-
-		_checkCurrentPaymentMethod: function (sKey) {
-			if (!sKey) {
-				return;
-			}
-
-			var detailModel = this.getModel("detailView"),
-				allPaymentMethods = detailModel.getProperty("/allPaymentMethods"),
-				currentPaymentMethods = detailModel.getProperty("/paymentMethods"),
-				paymentMethod = allPaymentMethods.find(function (p) {
-					return p.paymentTermsKey === sKey && !p.selectable;
-				});
-
-			if (paymentMethod) {
-				currentPaymentMethods.push(paymentMethod);
-				detailModel.setProperty("/paymentMethods", currentPaymentMethods);
-				this.getModel().setProperty(this._sObjectPath + "/paymentTermWarning", true);
-			}
 		},
 
 		_checkApproverRequired: function () {
@@ -2107,27 +1654,6 @@ sap.ui.define([
 				this.getModel().setProperty(this._sObjectPath + "/rentRelated", false);	
 			}
 			
-		},
-
-		_setExistingVendorMessage: function (data) {
-
-			var model = this.getModel("detailView"),
-				existingVendorMessage = "",
-				existingVendorMessageType = MessageType.None;
-
-			if (data.vendorDeletionFlag) {
-				existingVendorMessage =
-					"This vendor is flagged for deletion and cannot be updated. You can request an update to reinstate the vendor.";
-				existingVendorMessageType = MessageType.Warning;
-			} else {
-				if (!data.paymentTerms) {
-					existingVendorMessage = "This vendor has not been extended to your company code. You can request an update to extend the vendor.";
-					existingVendorMessageType = MessageType.Warning;
-				}
-			}
-
-			model.setProperty("/existingVendorMessage", existingVendorMessage);
-			model.setProperty("/existingVendorMessageType", existingVendorMessageType);
 		},
 
 		onEmailChange: function (event) {

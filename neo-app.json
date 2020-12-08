@@ -7,7 +7,7 @@
         "type": "service",
         "name": "sapui5",
         "entryPath": "/resources",
-        "version": "1.38.15"
+        "version": "1.60.30"
       },
       "description": "SAPUI5 Resources"
     },
@@ -17,7 +17,7 @@
         "type": "service",
         "name": "sapui5",
         "entryPath": "/test-resources",
-        "version": "1.38.15"
+        "version": "1.60.30"
       },
       "description": "SAPUI5 Test Resources"
     },
@@ -29,6 +29,26 @@
         "entryPath": "/sap/opu/odata"
       },
       "description": "SAP Gateway"
+    },
+       {
+      "path": "/resources/factsheet/vendor/codan",
+      "target": {
+        "type": "destination",
+        "name": "GD1",
+        "entryPath": "/sap/bc/ui5_ui5/sap/z_ven_req_fact",
+        "preferLocal": true
+      },
+      "description": "factsheet/req/customer/codan Reuse Library"
+    },
+    {
+      "path": "/resources/codan/z_ie11_polyfill",
+      "target": {
+        "type": "destination",
+        "name": "GD1",
+        "entryPath": "/sap/bc/ui5_ui5/sap/z_ie11_polyfill",
+        "preferLocal": true
+      },
+      "description": "codan/z_ie11_polyfill Reuse Library"
     }
   ],
   "sendWelcomeFileRedirect": true
