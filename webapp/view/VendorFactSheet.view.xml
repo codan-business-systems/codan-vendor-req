@@ -218,7 +218,8 @@
 								<items>
 									<ColumnListItem type="Inactive">
 										<ObjectIdentifier text="{detailView>paymentMethodText} ({detailView>paymentMethodCode})"/>
-										<Switch state="{detailView>paymentMethodActive}" enabled="{detailView>/editMode}" change="paymentMethodChange"/>
+										<Switch state="{detailView>paymentMethodActive}" 
+												enabled="{= ${detailView>/editMode} &amp;&amp; ${detailView>selectable} }" change="paymentMethodChange"/>
 									</ColumnListItem>
 								</items>
 							</Table>

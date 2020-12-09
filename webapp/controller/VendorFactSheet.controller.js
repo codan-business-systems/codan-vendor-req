@@ -131,6 +131,7 @@ sap.ui.define([
 						this._resetAttachmentRequirements(this._sCompanyCode);
 						this._parsePaymentMethods(data);
 						this._resetRegionFilters(data.country);
+						this._checkPaymentMethods(data.country);
 						this._checkCurrentPaymentMethod(data.paymentTermsKey);
 
 						this._bindView(this._sObjectPath);
@@ -149,11 +150,28 @@ sap.ui.define([
 		countryChange: function (oEvent) {
 			var country = typeof oEvent === "string" ? oEvent : oEvent.getSource().getSelectedKey();
 			this._resetRegionFilters(country);
+			this._checkPaymentMethods(country);
 		},
 
 		_resetRegionFilters: function (sCountry) {
 			this.setRegionFilter(this.getView().byId("region"), sCountry);
 			this.setRegionFilter(this.getView().byId("poBoxRegion"), sCountry);
+		},
+		
+		_checkPaymentMethods: function (sCountry) {
+			var detailModel = this.getModel("detailView"),
+			 paymentMethods = detailModel.getProperty("/paymentMethods");
+			 
+			 paymentMethods.forEach(function(p) {
+				p.selectable = sCountry === "AU" || !p.AUOnly;
+				
+				if (!p.selectable) {
+					p.paymentMethodActive = false;
+				}
+			 });
+			 
+			 detailModel.setProperty("/paymentMethods", paymentMethods);
+			 detailModel.refresh();
 		},
 
 		_onChangeRequestMatched: function (oEvent) {
@@ -327,6 +345,7 @@ sap.ui.define([
 						oViewModel.setProperty("/existingVendor", !!result.vendorId);
 						this._parsePaymentMethods(result);
 						this._resetRegionFilters(result.country);
+						this._checkPaymentMethods(result.country)
 
 						if (oViewModel.getProperty("/changeRequestMode")) {
 							if (result.status === "R" || !result.status) {
@@ -1395,14 +1414,14 @@ sap.ui.define([
 				/* Read Payment Methods */
 				new Promise(function (resolve, reject) {
 					model.metadataLoaded().then(function () {
-						var paymentMethods = detailModel.getProperty("/paymentMethods");
+/*						var paymentMethods = detailModel.getProperty("/paymentMethods");
 						if (paymentMethods.length > 0) {
 							paymentMethods.forEach(function (o) {
 								o.paymentMethodActive = false;
 							});
 							resolve();
 							return;
-						}
+						}*/
 
 						model.read("/PaymentMethods", {
 							filters: [
@@ -1419,7 +1438,9 @@ sap.ui.define([
 										paymentMethodText: o.paymentMethodText,
 										bankDetailsReqdFlag: o.bankDetailsReqdFlag,
 										addressReqdFlag: o.addressReqdFlag,
-										paymentMethodActive: false
+										paymentMethodActive: false,
+										selectable: true,
+										AUOnly: o.notForOverseasFlag
 									};
 								});
 								detailModel.setProperty("/paymentMethods", aPaymentMethods);
@@ -1997,7 +2018,24 @@ sap.ui.define([
 		},
 
 		approversOk: function (event) {
-			var that = this;
+			var that = this,
+				approvalList = sap.ui.getCore().byId("approvalWorkflowList"),
+				error = false;
+				
+			approvalList.getItems().forEach(function(i) {
+				var context = i.getBindingContext(),
+					approval = context.getObject();
+				
+				if (approval.userSelected && !approval.approverName) {
+					error = true;
+				}
+			});
+			
+			if (error) {
+				MessageBox.error("One or more approvals require your selection - click on the row to select an approver");
+				return;
+			}
+			
 			if (this._oApproverDialog) {
 				this._oApproverDialog.close();
 			}
