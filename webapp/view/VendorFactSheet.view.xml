@@ -27,7 +27,7 @@
 								<Toolbar>
 									<Title text="Basic Detail"/>
 									<ToolbarSpacer/>
-									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>basicDetailsHelpText}"/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showBasicDetailsHelp"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -88,7 +88,7 @@
 								<Toolbar>
 									<Title text="Purchasing Details"/>
 									<ToolbarSpacer/>
-									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>purchaseContactDetailsHelpText}"/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showPurchaseContactDetailsHelp"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -110,7 +110,7 @@
 								<Toolbar>
 									<Title text="Accounts Details"/>
 									<ToolbarSpacer/>
-									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>accountContactDetailsHelpText}"/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showContactDetailsHelp"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -135,7 +135,7 @@
 								<Toolbar>
 									<Title text="Street Address"/>
 									<ToolbarSpacer/>
-									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>streetAddressHelpText}"/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showStreetAddressHelp" />
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -169,7 +169,7 @@
 								<Toolbar>
 									<Title text="Postal Address"/>
 									<ToolbarSpacer/>
-									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>postalAddressHelpText}"/>
+									<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showPostalAddressHelp"/>
 								</Toolbar>
 							</f:toolbar>
 							<f:content>
@@ -199,7 +199,7 @@
 							<Toolbar>
 								<Title text="Payments"/>
 								<ToolbarSpacer/>
-								<core:Icon src="sap-icon://sys-help" tooltip="{i18n>paymentsHelpText}"/>
+								<core:Icon src="sap-icon://sys-help" tooltip="{i18n>showHelpTooltip}" press="showPaymentsHelp"/>
 							</Toolbar>
 						</f:toolbar>
 						<f:content>

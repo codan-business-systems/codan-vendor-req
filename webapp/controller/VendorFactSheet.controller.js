@@ -256,63 +256,56 @@ sap.ui.define([
 			}.bind(this));
 
 		},
-
-		showBankDetailsHelp: function (event) {
+		
+		showHelpPopover: function(control, title, text) {
 			if (!this._oHelpPopover) {
 				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
 				this.getView().addDependent(this.oHelpPopover);
 			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("bankDetailsHelpTitle");
-
+			
+			var oModel = this.getModel("detailView");
 			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
+			oModel.setProperty("/helpPopoverText", text);
+			
 			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("bankDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
-
+			sap.ui.getCore().byId("helpPopoverText").setValue(text);
+			
+			this._oHelpPopover.openBy(control);
 		},
-
-		showPurchaseContactDetailsHelp: function (event) {
-			if (!this._oHelpPopover) {
-				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
-				this.getView().addDependent(this.oHelpPopover);
-			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("purchaseContactDetailsHelpTitle");
-
-			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
-			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("purchaseContactDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
+		
+		showBasicDetailsHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("basicDetailsHelpTitle"), res.getText("basicDetailsHelpText"));
 		},
-
-		showAccountContactDetailsHelp: function (event) {
-			if (!this._oHelpPopover) {
-				this._oHelpPopover = sap.ui.xmlfragment("req.vendor.codan.fragments.HelpPopover", this);
-				this.getView().addDependent(this.oHelpPopover);
-			}
-
-			var oModel = this.getModel("detailView"),
-				title = this.getResourceBundle().getText("accountContactDetailsHelpTitle");
-
-			oModel.setProperty("/helpPopoverTitle", title);
-			oModel.setProperty("/helpPopoverText", "Some Text");
-
-			this._oHelpPopover.setTitle(title);
-
-			sap.ui.getCore().byId("helpPopoverText").setValue(this.getResourceBundle().getText("accountContactDetailsHelpText"));
-
-			this._oHelpPopover.openBy(event.getSource());
+		
+		showPurchaseContactDetailsHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("purchaseContactHelpTitle"), res.getText("purchaseContactDetailsHelpText"));
+		},
+		
+		showContactDetailsHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("accountContactHelpTitle"), res.getText("accountContactDetailsHelpText"));
+		},
+		
+		showStreetAddressHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("streetAddressHelpTitle"), res.getText("streetAddressHelpText"));
+		},
+		
+		showPostalAddressHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("postalAddressHelpTitle"), res.getText("postalAddressHelpText"));
+		},
+		
+		showPaymentsHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("paymentsHelpTitle"), res.getText("paymentsHelpText"));
+		},
+		
+		showBankDetailsHelp: function(event) {
+			var res = this.getResourceBundle();
+			this.showHelpPopover(event.getSource(), res.getText("bankDetailsHelpTitle"), res.getText("bankDetailsHelpText"));
 		},
 
 		/**
