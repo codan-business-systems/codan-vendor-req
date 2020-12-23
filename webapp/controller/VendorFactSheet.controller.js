@@ -19,7 +19,7 @@ sap.ui.define([
 	"use strict";
 
 	return BaseController.extend("req.vendor.codan.controller.VendorFactSheet", {
-		
+
 		_oFactSheetComponent: undefined,
 
 		/**
@@ -31,118 +31,82 @@ sap.ui.define([
 
 			// Call the BaseController's onInit method (in particular to initialise the extra JSON models)
 			BaseController.prototype.onInit.apply(this, arguments);
-			
+
 			this._oViewModel = new JSONModel({
 				busy: false,
 				delay: 0,
-				existingVendor: false
+				submitVisible: true,
+				submitAction: "Submit for Approval",
+				changeRequestMode: false,
+				editMode: false
 			});
-			
+
 			this.setModel(this._oViewModel, "detailView");
 
 			this.getRouter().getRoute("vendorFactSheet").attachPatternMatched(this._onObjectMatched, this);
 			this.getRouter().getRoute("changeRequest").attachPatternMatched(this._onChangeRequestMatched, this);
 			this.getRouter().getRoute("newVendor").attachPatternMatched(this._onNewVendor, this);
-			
+
 		},
-		
-		_initialiseFactSheetComponent: function(oSettings) {
-			sap.ui.component({
-				name: "factsheet.req.vendor.codan",
-				settings: oSettings,
-				async: true,
-				manifestFirst : true  //deprecated from 1.49+
-				// manifest : true    //SAPUI5 >= 1.49
-			}).then(function(oComponent){
-				this._oFactSheetComponent = oComponent;
-				this.byId("componentFactSheet").setComponent(this._oFactSheetComponent);
-			}.bind(this)).catch(function(oError) {
-				jQuery.sap.log.error(oError);
-			});
-		},
-		
-		_setupFactSheetComponent: function(oSettings) {
+
+		onNavBack: function () {
+
 			var that = this;
-			if (!this._oFactSheetComponent) {
-				this._initialiseFactSheetComponent(oSettings);
-			} else {
-				for (var prop in oSettings) {
-					if (oSettings.hasOwnProperty(prop)) {
-						var setter = "set" + prop.charAt(0).toUpperCase + prop.slice(1);
-						this._oFactSheetComponent[setter](oSettings[prop]);
+
+			var navBack = function () {
+				that.getModel().resetChanges();
+				that._navBack();
+			};
+
+			if (this._oFactSheetComponent.getProperty("editable") && this.getModel().hasPendingChanges()) {
+				MessageBox.confirm("This request will be lost. Do you wish to continue?", {
+					title: "Data Loss Confirmation",
+					onClose: function (sAction) {
+						if (sAction === sap.m.MessageBox.Action.OK) {
+							navBack();
+						}
 					}
-				}
-			}
-			
-			this._oFactSheetComponent.loadData().then(function() {
-				that._bindView(that._oFactSheetComponent.getObjectPath());
-			});
-		},
 
-		/**
-		 * Binds the view to the object path.
-		 * @function
-		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
-		 * @private
-		 */
-		_onObjectMatched: function (oEvent) {
-			
-			this._sVendorId = oEvent.getParameter("arguments").id;
-			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
-			
-			this._setupFactSheetComponent({
-				vendorId: this._sVendorId,
-				companyCode: this._sCompanyCode,
-				existingVendor: !!this._sVendorId,
-				editBankDetails: !this._sVendorId,
-				changeRequestMode: false,
-				submitVisible: true,
-				editable: false
-			});
-		},
-
-		_onChangeRequestMatched: function (oEvent) {
-			var oStartupParams = oEvent.getParameter("arguments");
-
-			if (!oStartupParams || !oStartupParams.id) {
+				});
 				return;
 			}
-			
-			this._sRequestId = oStartupParams.id;
-			this._sCompanyCode = oStartupParams.companyCode;
-			
-			this._setupFactSheetComponent({
-				requestId: this._sRequestId,
-				vendorId: "",
-				companyCode: this._sCompanyCode,
-				editable: true,
-				editBankDetails: false,
-				changeRequestMode: true,
-				submitVisible: false
-			});
+			this._navBack();
 
 		},
 
-		/**
-		 * Create a new request and binds the view
-		 * @function
-		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
-		 * @private
-		 */
-		_onNewVendor: function (oEvent) {
+		onSave: function () {
+			this._oFactSheetComponent.save();
+		},
 
-			var detailModel = this.getModel("detailView");
-			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
-			
-			this._setupFactSheetComponent({
-				companyCode: this._sCompanyCode,
-				editable: true,
-				editBankDetails: false,
-				changeRequestMode: false,
-				submitVisible: true,
-				vendorId: "",
-				requestId: ""
-			});
+		onSubmit: function () {
+
+			this._oFactSheetComponent.submit();
+
+		},
+		
+		displayMessagesPopover: function (oEvent) {
+			var oMessagesButton = oEvent ? oEvent.getSource() : this.byId("vendorFactSheetPage")
+				.getAggregation("messagesIndicator").getAggregation("_control");
+
+			if (!this._oMessagePopover) {
+				this._oMessagePopover = new MessagePopover({
+					items: {
+						path: "message>/",
+						template: new MessagePopoverItem({
+							description: "{message>description}",
+							type: "{message>type}",
+							title: "{message>message}",
+							subtitle: "{message>subtitle}"
+						})
+					},
+					initiallyExpanded: true
+				});
+				oMessagesButton.addDependent(this._oMessagePopover);
+			}
+
+			if (oEvent || !this._oMessagePopover.isOpen()) {
+				this._oMessagePopover.toggle(oMessagesButton);
+			}
 
 		},
 
@@ -155,6 +119,10 @@ sap.ui.define([
 		_bindView: function (sObjectPath) {
 			var oViewModel = this.getModel("detailView"),
 				oDataModel = this.getModel();
+				
+			if (sObjectPath === "/Requests('')") {
+				return;
+			}
 
 			this.getView().bindElement({
 				path: sObjectPath,
@@ -173,8 +141,15 @@ sap.ui.define([
 
 						oViewModel.setProperty("/busy", false);
 						var result = data.getParameter ? data.getParameter("data") : data;
-						
+
 						oViewModel.setProperty("/existingVendor", !!result.vendorId);
+						
+						if (oViewModel.getProperty("/changeRequestMode")) {
+							if (result.status === "R" || !result.status) {
+								oViewModel.setProperty("/submitVisible", true);
+								oViewModel.setProperty("/submitAction", result.status === "R" ? "Resubmit" : "Submit");
+							}
+						}
 
 					}.bind(this)
 				}
@@ -182,11 +157,138 @@ sap.ui.define([
 
 		},
 
-		onSubmit: function () {
+		_initialiseFactSheetComponent: function (oSettings) {
+			var that = this;
+			return new Promise(function (res, rej) {
 
-			this._oFactSheetComponent.submit();
+				if (that._oFactSheetComponent) {
+					res();
+					return;
+				}
+
+				sap.ui.component({
+					name: "factsheet.vendor.codan",
+					settings: oSettings,
+					async: true,
+					manifestFirst: true //deprecated from 1.49+
+						// manifest : true    //SAPUI5 >= 1.49
+				}).then(function (oComponent) {
+					that._oFactSheetComponent = oComponent;
+					that.byId("componentFactSheet").setComponent(that._oFactSheetComponent);
+					
+					that._oFactSheetComponent.attachEvent("editModeChanged", function(event) {
+						that.getModel("detailView").setProperty("/editMode", event.getParameter("editable"));	
+					});
+					
+					that._oFactSheetComponent.attachEvent("messagesRaised", function() {
+						that.displayMessagesPopover();
+					});
+					res();
+				}).catch(function (oError) {
+					jQuery.sap.log.error(oError);
+					rej();
+				});
+			});
+		},
+
+		_onChangeRequestMatched: function (oEvent) {
+			var oStartupParams = oEvent.getParameter("arguments");
+
+			if (!oStartupParams || !oStartupParams.id) {
+				return;
+			}
+			
+			this.getModel("detailView").setProperty("/submitVisible", false);
+			this.getModel("detailView").setProperty("/changeRequestMode", true);
+			this.getModel("detailView").setProperty("/editMode", true);
+
+			this._sRequestId = oStartupParams.id;
+			this._sCompanyCode = oStartupParams.companyCode;
+			
+			this._setupFactSheetComponent({
+				requestId: this._sRequestId,
+				vendorId: "",
+				companyCode: this._sCompanyCode,
+				editable: true,
+				editBankDetails: false,
+				changeRequestMode: true,
+				showHeader: false
+			});
 
 		},
+
+		/**
+		 * Create a new request and binds the view
+		 * @function
+		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
+		 * @private
+		 */
+		_onNewVendor: function (oEvent) {
+
+			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
+			this.getModel("detailView").setProperty("/submitVisible", true);
+			this.getModel("detailView").setProperty("/changeRequestMode", false);
+			this.getModel("detailView").setProperty("/editMode", true);
+
+			this._setupFactSheetComponent({
+				companyCode: this._sCompanyCode,
+				editable: true,
+				editBankDetails: false,
+				changeRequestMode: false,
+				vendorId: "",
+				requestId: "",
+				showHeader: false
+			});
+
+		},
+
+		/**
+		 * Binds the view to the object path.
+		 * @function
+		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
+		 * @private
+		 */
+		_onObjectMatched: function (oEvent) {
+
+			this._sVendorId = oEvent.getParameter("arguments").id;
+			this._sCompanyCode = oEvent.getParameter("arguments").companyCode;
+			
+			
+			this.getModel("detailView").setProperty("/submitVisible", true);
+			this.getModel("detailView").setProperty("/changeRequestMode", false);
+			this.getModel("detailView").setProperty("/editMode", false);
+
+			this._setupFactSheetComponent({
+				vendorId: this._sVendorId,
+				companyCode: this._sCompanyCode,
+				existingVendor: !!this._sVendorId,
+				editBankDetails: !this._sVendorId,
+				changeRequestMode: false,
+				editable: false,
+				showHeader: true
+			});
+		},
+
+		_setupFactSheetComponent: function (oSettings) {
+			var that = this;
+			
+			this._initialiseFactSheetComponent(oSettings).then(function () {
+				for (var prop in oSettings) {
+					if (oSettings.hasOwnProperty(prop)) {
+						var setter = "set" + prop.charAt(0).toUpperCase() + prop.slice(1);
+						that._oFactSheetComponent[setter](oSettings[prop]);
+					}
+				}
+
+				that._oFactSheetComponent.loadData().then(function () {
+					that._bindView(that._oFactSheetComponent.getObjectPath());
+				});
+			});
+			
+
+		},
+
+		/************************************ EVERYTHING BELOW HERE TO BE REMOVED ************************************/
 
 		continueSubmissionAfterQuestionnaire: function () {
 
@@ -217,10 +319,6 @@ sap.ui.define([
 				});
 			});
 
-		},
-
-		onSave: function () {
-			this._saveReq(false);
 		},
 
 		bankDetailsVerified: function () {
@@ -300,32 +398,6 @@ sap.ui.define([
 				bankVerifiedTelMsg: ""
 			});
 		},
-
-		onNavBack: function () {
-
-			var that = this;
-
-			var navBack = function () {
-				that.getModel().resetChanges();
-				that._navBack();
-			};
-
-			if (this.getModel("detailView").getProperty("/editMode") && this.getModel().hasPendingChanges()) {
-				MessageBox.confirm("This request will be lost. Do you wish to continue?", {
-					title: "Data Loss Confirmation",
-					onClose: function (sAction) {
-						if (sAction === sap.m.MessageBox.Action.OK) {
-							navBack();
-						}
-					}
-
-				});
-				return;
-			}
-			this._navBack();
-
-		},
-
 		onBankCountryChange: function (oEvent) {
 			var bankCountry = oEvent.getSource().getSelectedKey(),
 				detailModel = this.getModel("detailView");
@@ -694,7 +766,7 @@ sap.ui.define([
 					if (bSubmit) {
 						model.resetChanges();
 						var successMessage = detailModel.getProperty("/changeRequestMode") ? "The request has been resubmitted for approval" :
-											 that.getResourceBundle().getText("msgCreateSuccess", [id]);
+							that.getResourceBundle().getText("msgCreateSuccess", [id]);
 						MessageBox.success(successMessage, {
 							title: "Success",
 							onClose: function () {
@@ -848,7 +920,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Tax number mandatory for US companies in 4300
 			if (req.companyCode === "4300" && req.vendorType !== "E" && !req.abn) {
 				messages.push(new Message({
@@ -859,7 +931,7 @@ sap.ui.define([
 					processor: this.getOwnerComponent().getModel()
 				}));
 			}
-			
+
 			// Company Structure mandatory for US companies in 4300.
 			var compStruct = this.getView().byId("companyStructure");
 			if (compStruct && compStruct.getVisible()) {
@@ -870,10 +942,10 @@ sap.ui.define([
 						type: MessageType.Error,
 						target: this._sObjectPath + "/companyStructureCode",
 						processor: this.getOwnerComponent().getModel()
-					}));			
+					}));
 				}
 			}
-			
+
 			// Check that the postcode is valid
 			if (req.postcode && !postcodeValidator.validatePostcode(this.getModel("countries"), req.country, req.postcode)) {
 				messages.push(new Message({
@@ -1320,7 +1392,6 @@ sap.ui.define([
 				"newValue"));
 		},
 
-
 		setCurrentQuestions: function () {
 			var detailModel = this.getModel("detailView"),
 				allQuestions = detailModel.getProperty("/allQuestions"),
@@ -1328,7 +1399,7 @@ sap.ui.define([
 				editBankDetails = detailModel.getProperty("/editBankDetails"),
 				questions = detailModel.getProperty("/questions");
 
-				allQuestions = allQuestions.filter(function (o) {
+			allQuestions = allQuestions.filter(function (o) {
 					return (!existingVendor && o.newRequest) ||
 						(editBankDetails && o.bankChange) ||
 						(existingVendor && o.otherChange);
@@ -1642,18 +1713,18 @@ sap.ui.define([
 		cancelPaymentTermsDialog: function (event) {
 			this.closePaymentTermsDialog();
 		},
-		
-		companyStructureChange: function(event) {
+
+		companyStructureChange: function (event) {
 			var selectedItem = event.getParameter("selectedItem"),
 				withholdingCode = selectedItem.getBindingContext().getObject().filterValue2,
 				rentRelated = this.getView().byId("rentRelated");
-				
+
 			rentRelated.setEnabled(!!withholdingCode);
-			
+
 			if (!withholdingCode) {
-				this.getModel().setProperty(this._sObjectPath + "/rentRelated", false);	
+				this.getModel().setProperty(this._sObjectPath + "/rentRelated", false);
 			}
-			
+
 		},
 
 		onEmailChange: function (event) {
