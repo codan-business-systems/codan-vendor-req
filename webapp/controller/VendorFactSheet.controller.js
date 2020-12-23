@@ -190,6 +190,22 @@ sap.ui.define([
 				});
 			});
 		},
+		
+		_onBindingChange: function () {
+			var oView = this.getView(),
+				oViewModel = this.getModel("detailView"),
+				oElementBinding = oView.getElementBinding();
+
+			// No data for the binding
+			if (!oElementBinding.getBoundContext()) {
+				this.getRouter().getTargets().display("objectNotFound");
+				return;
+			}
+
+			// Everything went fine.
+			oViewModel.setProperty("/busy", false);
+
+		},
 
 		_onChangeRequestMatched: function (oEvent) {
 			var oStartupParams = oEvent.getParameter("arguments");
