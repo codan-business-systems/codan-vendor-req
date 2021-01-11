@@ -183,6 +183,12 @@ sap.ui.define([
 					that._oFactSheetComponent.attachEvent("messagesRaised", function() {
 						that.displayMessagesPopover();
 					});
+					
+					that._oFactSheetComponent.attachEvent("saved", function(event) {
+						if (event.getParameter("submitted")) {
+							that.onNavBack();	
+						}
+					});
 					res();
 				}).catch(function (oError) {
 					jQuery.sap.log.error(oError);
