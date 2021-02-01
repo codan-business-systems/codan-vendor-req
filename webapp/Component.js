@@ -1,3 +1,5 @@
+jQuery.sap.registerModulePath("factsheet.vendor.codan", "/sap/bc/ui5_ui5/sap/z_ven_req_fact");
+
 sap.ui.define([
 	"sap/ui/core/UIComponent",
 	"sap/ui/Device",

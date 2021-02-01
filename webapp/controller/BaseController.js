@@ -16,40 +16,6 @@ sap.ui.define([
 		},
 
 		/**
-		 * Ensures the region filter on the specified control is set based on the selected Country key
-		 * @param {Object} oControl control to change the binding on
-		 * @param {string} sCountryKey Key of the country selected
-		 * @public
-		 */
-		setRegionFilter: function (oControl, sCountryKey) {
-
-			if (!oControl) {
-				return;
-			}
-
-			var oBinding = oControl.getBinding("items");
-
-			if (!oBinding) {
-				return;
-			}
-
-			var aFilters = [];
-			// Always start with a blank value
-			aFilters.push(new sap.ui.model.Filter("country", sap.ui.model.FilterOperator.EQ, ""));
-
-			// If a country key is passed, add that as well
-			if (sCountryKey && sCountryKey !== "") {
-				aFilters.push(new sap.ui.model.Filter("country", sap.ui.model.FilterOperator.EQ, sCountryKey));
-			}
-
-			oBinding.filter(new sap.ui.model.Filter({
-				filters: aFilters,
-				and: false
-			}));
-
-		},
-
-		/**
 		 * Convenience method for accessing the router.
 		 * @public
 		 * @returns {sap.ui.core.routing.Router} the router for this component
