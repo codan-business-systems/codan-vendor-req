@@ -115,7 +115,7 @@
 {"name":"Comoros","key":"KM","postcodeMax":0,"postcodeRule":null},
 {"name":"St Kitts&Nevis","key":"KN","postcodeMax":0,"postcodeRule":null},
 {"name":"North Korea","key":"KP","postcodeMax":7,"postcodeRule":5},
-{"name":"South Korea","key":"KR","postcodeMax":7,"postcodeRule":9},
+{"name":"South Korea","key":"KR","postcodeMax":5,"postcodeRule":4},
 {"name":"Kuwait","key":"KW","postcodeMax":5,"postcodeRule":4},
 {"name":"Cayman Islands","key":"KY","postcodeMax":0,"postcodeRule":null},
 {"name":"Kazakhstan","key":"KZ","postcodeMax":6,"postcodeRule":4},

@@ -1,67 +1,72 @@
-<mvc:View xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" 
-xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:footerbar="sap.ushell.ui.footerbar" controllerName="req.vendor.codan.controller.SearchVendor"
-xmlns:core="sap.ui.core">
-  <Page id="page" navButtonPress="onNavBack" showNavButton="true" title="{i18n>searchVendorTitle}" backgroundDesign="Solid">
-    <content>
-    <HBox height="2rem"/>
-    <MessageStrip text="{i18n>searchVendorExplainText}" showIcon="true"/>
-    <MessageStrip text="Select a Company Code to enable search" showIcon="true" type="Error" visible="{= !${worklistView>/companyCode} }"/>
-    <HBox height="2rem"/>
-      <sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" columnsL="1" editable="false" emptySpanL="4" emptySpanM="4" id="SearchQueryParams" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" minWidth="1024" backgroundDesign="Transparent">
-          <sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form" editable="true">
-	          <Label text="Vendor Search" width="100%" id="vendorNameLabel" textAlign="Right" labelFor="vendorName" class="vendorSearchLabel"/>
-	          <Input id="vendorName" value="{worklistView>/vendorName}" placeholder="Search by Vendor ID, Name or ABN" liveChange="vendorNameChange"
-	        		 submit="onSearch"/>
-          </sap.ui.layout.form:content>
-      </sap.ui.layout.form:SimpleForm>
-      <sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" editable="false" layout="ResponsiveGridLayout" backgroundDesign="Transparent" labelSpanL="3" labelSpanM="3">
-          <sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form">
-          <Label text="" width="100%"/>
-          <Button id="btnSearch" text="Search" width="120px" type="Emphasized" press="onSearch" enabled="false"/>
-        </sap.ui.layout.form:content>
-      </sap.ui.layout.form:SimpleForm>
-      <Table id="searchResultsTable" width="auto" class="sapUiResponsiveMargin"
-    		 items="{ path: '/Vendors', sorter: { path: 'name', descending: false } }" 
-    		 noDataText="{i18n>tableNoDataText}" busyIndicatorDelay="{worklistView>/tableBusyDelay}" 
-    		 growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
-        <headerToolbar>
-          <Toolbar>
-            <Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
-            <ToolbarSpacer/>
-            <Button icon="sap-icon://settings" text="{= ${worklistView>/companyCode} ? 'Company ' + ${worklistView>/companyCode} : 'Select Company Code' }" 
-            		type="Emphasized" press="_showCompanySelectDialog"/>
-          </Toolbar>
-        </headerToolbar>
-        <columns>
-          <Column id="vendorNameTableColumn">
-            <Text text="{i18n>vendorNameColumnTitle}" id="vendorNameColumnTitle"/>
-          </Column>
-          <Column id="abnTableColumn">
-            <Text text="{i18n>abnColumnTitle}" id="abnColumnTitle"/>
-          </Column>
-          <Column id="addressTableColumn">
-            <Text text="{i18n>addressColumnTitle}" id="addressColumnTitle"/>
-          </Column>
-        </columns>
-        <items>
-          <ColumnListItem type="Navigation" press="onSelectVendor">
-            <cells>
-              <HBox>
-            	<ObjectIdentifier title="{name} ({id})" id="vendorResultsName"/>
-            	<core:Icon color="red" src="sap-icon://alert" visible="{vendorDeletionFlag}"/>
-              </HBox>
-              <Text text="{abn}" maxLines="0" id="vendorResultsAbn"/>
-              <Text text="{addressStr}" maxLines="0" id="vendorResultsAddress"/>
-            </cells>
-          </ColumnListItem>
-        </items>
-      </Table>
-    </content>
-    <footer>
-      <OverflowToolbar id="footerToolbar">
-        <ToolbarSpacer/>
-        <Button type="Emphasized" enabled="{worklistView>/searched}" text="{i18n>btnCreateVendor}" press="createNewVendor"/>
-      </OverflowToolbar>
-    </footer>
-  </Page>
+<mvc:View xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"
+	xmlns:footerbar="sap.ushell.ui.footerbar" controllerName="req.vendor.codan.controller.SearchVendor" xmlns:core="sap.ui.core">
+	<Page id="page" navButtonPress="onNavBack" showNavButton="true" title="{i18n>searchVendorTitle}" backgroundDesign="Solid">
+		<content>
+			<HBox height="2rem"/>
+			<MessageStrip text="{i18n>searchVendorExplainText}" showIcon="true"/>
+			<MessageStrip text="Select a Company Code to enable search" showIcon="true" type="Error" visible="{= !${worklistView>/companyCode} }"/>
+			<HBox height="2rem"/>
+			<sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" columnsL="1" editable="false" emptySpanL="4" emptySpanM="4"
+				id="SearchQueryParams" labelSpanL="3" labelSpanM="3" layout="ResponsiveGridLayout" minWidth="1024" backgroundDesign="Transparent">
+				<sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form" editable="true">
+					<Label text="Company Code" labelFor="inputCompanyCode" class="vendorSearchLabel" />
+					<ComboBox id="company"
+						items="{path: '/ValueHelpResults', filters: { path: 'property', operator: 'EQ', value1: 'CompanyCode' }, sorter: { path: 'key' } }"
+						selectedKey="{worklistView>/companyCode}" valueStateText="Select a company code"
+						change="saveCompanyCodeParam">
+						<core:Item text="[{key}] {value}" key="{key}"/>
+					</ComboBox>
+					<Label text="Vendor Search" width="100%" id="vendorNameLabel" textAlign="Right" labelFor="vendorName" class="vendorSearchLabel"/>
+					<Input id="vendorName" value="{worklistView>/vendorName}" placeholder="Search by Vendor ID, Name or ABN" liveChange="vendorNameChange"
+						submit="onSearch"/>
+				</sap.ui.layout.form:content>
+			</sap.ui.layout.form:SimpleForm>
+			<sap.ui.layout.form:SimpleForm xmlns:sap.ui.layout.form="sap.ui.layout.form" xmlns:sap.ui.core="sap.ui.core" editable="false"
+				layout="ResponsiveGridLayout" backgroundDesign="Transparent" labelSpanL="3" labelSpanM="3">
+				<sap.ui.layout.form:content xmlns:sap.ui.layout.form="sap.ui.layout.form">
+					<Label text="" width="100%"/>
+					<Button id="btnSearch" text="Search" width="120px" type="Emphasized" press="onSearch" enabled="false"/>
+				</sap.ui.layout.form:content>
+			</sap.ui.layout.form:SimpleForm>
+			<Table id="searchResultsTable" width="auto" class="sapUiResponsiveMargin"
+				items="{ path: '/Vendors', sorter: { path: 'name', descending: false } }" noDataText="{i18n>tableNoDataText}"
+				busyIndicatorDelay="{worklistView>/tableBusyDelay}" growing="true" growingScrollToLoad="true" updateFinished="onUpdateFinished">
+				<headerToolbar>
+					<Toolbar>
+						<Title id="tableHeader" text="{worklistView>/worklistTableTitle}"/>
+						<ToolbarSpacer/>
+					</Toolbar>
+				</headerToolbar>
+				<columns>
+					<Column id="vendorNameTableColumn">
+						<Text text="{i18n>vendorNameColumnTitle}" id="vendorNameColumnTitle"/>
+					</Column>
+					<Column id="abnTableColumn">
+						<Text text="{i18n>abnColumnTitle}" id="abnColumnTitle"/>
+					</Column>
+					<Column id="addressTableColumn">
+						<Text text="{i18n>addressColumnTitle}" id="addressColumnTitle"/>
+					</Column>
+				</columns>
+				<items>
+					<ColumnListItem type="Navigation" press="onSelectVendor">
+						<cells>
+							<HBox>
+								<ObjectIdentifier title="{name} ({id})" id="vendorResultsName"/>
+								<core:Icon color="red" src="sap-icon://alert" visible="{vendorDeletionFlag}"/>
+							</HBox>
+							<Text text="{abn}" maxLines="0" id="vendorResultsAbn"/>
+							<Text text="{addressStr}" maxLines="0" id="vendorResultsAddress"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</content>
+		<footer>
+			<OverflowToolbar id="footerToolbar">
+				<ToolbarSpacer/>
+				<Button type="Emphasized" enabled="{worklistView>/searched}" text="{i18n>btnCreateVendor}" press="createNewVendor"/>
+			</OverflowToolbar>
+		</footer>
+	</Page>
 </mvc:View>
